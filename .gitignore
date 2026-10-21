@@ -1,0 +1,101 @@
+# Python and notebook runtime state
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+.venv/
+venv/
+.pytest_cache/
+.coverage
+htmlcov/
+*.egg-info/
+build/
+dist/
+
+# Local credentials and machine-specific configuration
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+credentials.json
+token.json
+.DS_Store
+Thumbs.db
+
+# Model/checkpoint assets belong in GitHub Releases
+*.pt
+*.pth
+*.ckpt
+*.safetensors
+*.bin
+checkpoint-*/
+/weights/*
+!/weights/README.md
+
+# Runtime data and output; historical supplied training logs remain trackable
+/data/
+/dataset/
+/datasets/
+/outputs/*
+!/outputs/README.md
+/results/
+wandb/
+runs/
+
+# Human-study runtime records and image collections
+/human_test/*.csv
+/human_test/*.json
+/human_test/results/
+/human_test/output/
+/human_test/outputs/
+/human_test/data/
+/human_test/dataset/
+/human_test/datasets/
+/human_test/images/
+/human_test/randomization_state*
+
+# Linux/WSL/Colab local runtime state
+.cache/
+env/
+.mypy_cache/
+.ruff_cache/
+.venv-*/
+*.log
+events.out.tfevents.*
+*.csv.tmp
+
+# Runtime directories may be relative to the current working directory
+data/
+dataset/
+datasets/
+result/
+results/
+checkpoints/
+*_ckpt/
+outputs/
+!/outputs/
+/outputs/*
+!/outputs/README.md
+
+# Known human-study filenames, wherever a script is launched
+results_seq.csv
+results_rand.csv
+selected_images*.csv
+ensemble_results_questions*.csv
+randomization_table.csv
+randomization_state.csv
+randomization_state.csv.lock
+
+# Known inference outputs containing paths or ECG visualizations
+predictions.csv
+*_ensemble_preds.json
+*_ensemble_probs.png
+*_vit_attn_gradcam.png
+*_convnextv2_gradcam.png
+*_convnext_gradcam_*.png
+*_mlpmixer_pred.png
+
+# Actual human-study layout names
+/human_test/result/
+/human_test/question/
+/human_test/stratified_block_random/
