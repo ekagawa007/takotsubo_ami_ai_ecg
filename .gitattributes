@@ -1,0 +1,5 @@
+# Preserve exact bytes of the archived source files and notebooks.
+# UTF-8 documentation remains plain text. Do not normalize original line endings.
+training/** -text
+evaluation/original/** -text
+human_test/*.py -text
