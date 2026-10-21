@@ -1,0 +1,50 @@
+{
+  "date": "2026-10-21",
+  "documentation_version": "0.1.4",
+  "initial_baseline_files": 35,
+  "initial_baseline_verified_identical": 35,
+  "current_source_assets": 36,
+  "verified_identical": 19,
+  "verified_publication_edit": 17,
+  "roles": {
+    "original_inference_evaluation": 6,
+    "ft2_source": 2,
+    "ft2_notebook": 3,
+    "original_ensemble": 3,
+    "ft3_source": 2,
+    "ft3_notebook": 3,
+    "human_study_source": 4,
+    "ssl_source": 8,
+    "historical_training_log": 4,
+    "original_scheduling_helper": 1
+  },
+  "notebooks": 7,
+  "research_code_executed": false,
+  "model_execution_validated": false,
+  "publication_ready": false,
+  "remaining_release_decisions": [
+    "paper_run_and_checkpoint_correspondence",
+    "final_public_file_selection_and_availability_statement"
+  ],
+  "code_license": "MIT",
+  "copyright": "Copyright (c) 2026 Eisuke Kagawa",
+  "checkpoint_selection_method": {
+    "status": "author_confirmed_2026-10-21",
+    "description": "Training and validation losses were reviewed, and the checkpoint with the lowest validation loss among epochs without apparent signs of overfitting was selected.",
+    "metrics_reviewed": [
+      "training_loss",
+      "validation_loss"
+    ],
+    "actual_checkpoint_identities_verified": false
+  },
+  "notebook_metadata_privacy_review": {
+    "date_jst": "2026-10-21",
+    "public_files_reviewed": 71,
+    "notebooks_reviewed": 7,
+    "notebooks_metadata_cleaned": 2,
+    "notebook_cell_sources_unchanged": true,
+    "python_scripts_unchanged": true,
+    "removed_values_included_in_public_report": false,
+    "published_repository_verified": false
+  }
+}
