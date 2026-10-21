@@ -1,5 +1,38 @@
 # Execution environments
 
+Updated 2026-10-21 (JST); documentation revision 0.1.6.
+
+## Recorded training environment
+
+The following setup was reported as common across the ViT, ConvNeXtV2, and MLP-Mixer training workflows, including their pretraining and fine-tuning stages. Each run used one of the two compute environments below.
+
+| Item | Local training | Google Colab training |
+|---|---|---|
+| Host / runtime | Windows 11 with WSL | Google Colab GPU runtime |
+| Linux distribution | Ubuntu 22.04.5 LTS (Jammy Jellyfish) | Runtime image version not separately recorded |
+| Python | 3.12.12 | 3.12.12, as reported for the shared training setup |
+| GPU | NVIDIA GeForce RTX 5090 | NVIDIA A100 |
+| NVIDIA driver | 617.42 in the terminal output supplied during this documentation update; the historical training driver is not established | Not separately recorded |
+
+### Dependency record
+
+The root [requirements.txt](../requirements.txt) is the environment record from around the end of training, dated 2025-12-11. Its 165 pinned entries are preserved byte-for-byte. SHA-256: `4cfcdbc4261f5de46fbfad6cbb0dd726d01112171a336b507729cc701de270c1`.
+
+The public filename has no date suffix; the date of the supplied record is retained in this document and the README. This single file directly includes the complete supplied package list, including Jupyter and NVIDIA support packages. It is an environment snapshot, not a minimal dependency list or a validated portable lock file. A separate Colab package export was not supplied, so identical versions of all Colab-managed packages are not independently established.
+
+| Package / build | Recorded version |
+|---|---|
+| torch | 2.9.0+cu130 |
+| torchvision | 0.24.0+cu130 |
+| PyTorch CUDA build | 13.0 (`cu130`) |
+| timm | 1.0.22 |
+| transformers | 4.57.3 |
+| accelerate | 1.12.0 |
+| numpy | 2.2.6 |
+| scikit-learn | 1.8.0 |
+
+The CUDA build suffix does not identify the local CUDA Toolkit installation or the historical NVIDIA driver. Earlier commented installation examples in the original notebooks are retained as historical source; the requirements snapshot dated 2025-12-11 is the supplied later environment record.
+
 ## Runtime targets
 
 The repository can be stored or edited on native Windows 11. Model execution targets Linux, including WSL, and Google Colab. This choice does not require converting the original ViT training notebooks into Python scripts.
@@ -11,7 +44,7 @@ The repository can be stored or edited on native Windows 11. Model execution tar
 | Original dataset/CSV evaluation | Configure data and output locations | Configure data and output locations |
 | Original human-study administrator | Interactive terminal and a working graphical display required | Not a standard notebook workflow; a separate interactive UI would be needed |
 
-These are target environments, not a statement that all historical scripts have been executed successfully in them. Final weights, some dependencies and baseline predictions are still missing.
+The table describes runtime targets for the retained code and planned convenience features. The reported historical training setup is recorded above. Final weights and baseline predictions are not included, and clean-environment reproduction has not been performed during publication preparation.
 
 ## Paths
 
@@ -53,13 +86,52 @@ import ek_schedule_exe
 
 On Linux Jupyter, use the actual Linux checkout path instead. Configure notebook `%run`/script paths and data/checkpoint roots as well. Importing the helper does not wait; calling `wait_until_target_time` can wait until the next day. Its clock follows the runtime's local timezone. Scheduling flags and original learning settings are retained.
 
-## Environment setup plan
+## Reconstructing the WSL/Linux environment
 
-- WSL/Linux: use a dedicated Python environment and record the tested Python, PyTorch, torchvision, timm and transformers versions. Add requirements only after confirming compatibility with the final weights.
-- Colab: call the same inference implementation from the notebook, install the tested compatible dependencies, and validate in a fresh runtime. Record the tested runtime and device.
-- CPU inference is the initial functional target; CUDA acceleration is optional and must be checked with the actual models and TTA configuration.
-- Linux training may require GPU resources and model-specific dependencies. Confirm each historical workflow's original environment separately.
-- Human test requires terminal keyboard handling and graphical windows. Validate those capabilities before collecting real responses.
+These steps are based on the supplied dependency record and the official PyTorch distribution instructions. They have not yet been tested in a clean environment. Use a dedicated environment with Python **3.12.12** already available and a GPU driver compatible with the CUDA 13.0 build. Ubuntu's default Python is not a substitute for the recorded Python version.
+
+Run from the repository root in WSL/Linux:
+
+```bash
+python3.12 -m venv .venv
+source .venv/bin/activate
+python --version
+```
+
+Confirm that the output is `Python 3.12.12` before continuing. Install the matching PyTorch and torchvision builds from the official CUDA 13.0 index first, then the complete supplied snapshot from the normal package index:
+
+```bash
+python -m pip install torch==2.9.0 torchvision==0.24.0 --index-url https://download.pytorch.org/whl/cu130
+python -m pip install -r requirements.txt
+python -m pip check
+```
+
+The first command selects the CUDA 13.0 builds matching the `+cu130` entries. The index option is scoped to that command; requirements.txt does not add another global package index. A resolver error must be investigated rather than bypassed with `--no-deps` or by silently changing the historical snapshot.
+
+Inspect the resulting runtime without loading a research checkpoint:
+
+```bash
+python -c "import torch, torchvision, timm, transformers; print('torch:', torch.__version__); print('torchvision:', torchvision.__version__); print('timm:', timm.__version__); print('transformers:', transformers.__version__); print('CUDA build:', torch.version.cuda); print('CUDA available:', torch.cuda.is_available())"
+```
+
+An installation/import check does not establish model reproduction. Configure data/checkpoint paths and validate the selected training/evaluation workflow separately. The selected checkpoints and original baseline predictions are required for prediction comparisons.
+
+### Google Colab
+
+The reported Colab training setup used Python 3.12.12 and an NVIDIA A100. Colab provides a managed runtime whose current Python, GPU, driver, and preinstalled package versions must be checked for each reproduction attempt. The local Ubuntu version and local driver above do not describe the Colab runtime.
+
+Use the historical requirements as the version reference. The complete 165-package snapshot includes notebook-server and NVIDIA support packages; it has not been validated as an in-place replacement for Colab's managed environment. No one-command Colab installation is claimed here. A fresh Colab validation and a dedicated setup notebook remain planned.
+
+### Other workflows
+
+- Human-study administration requires an interactive Linux/WSL terminal and a working graphical display. Terminal/display validation remains pending.
+- A lightweight CPU inference environment will be documented with the planned public inference examples; the supplied CUDA snapshot does not describe that future environment.
+
+### Installation references
+
+- [Official PyTorch 2.9.0 installation commands](https://pytorch.org/get-started/previous-versions/#v290)
+- [pip freeze: installed-package snapshots](https://pip.pypa.io/en/stable/cli/pip_freeze/)
+- [pip check: installed dependency compatibility](https://pip.pypa.io/en/stable/cli/pip_check/)
 
 ## Current verification
 
