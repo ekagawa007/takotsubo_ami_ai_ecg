@@ -7,6 +7,7 @@ from pathlib import Path
 import sys
 
 from .settings import MODEL_NAMES, InferenceSettings, ModelSettings
+from .progress import ProgressReporter
 
 IMAGE_SUFFIXES = {".png", ".jpg", ".jpeg", ".bmp", ".tif", ".tiff", ".webp"}
 
@@ -40,6 +41,8 @@ def build_parser(fixed_model=None):
     parser.add_argument("--num-workers", type=int, default=4, help="DataLoader workers (default 4 as in archived evaluators; 0 is a portable override).")
     parser.add_argument("--output", required=True, help="New .json or .csv result file; CSV also gets a .metadata.json sidecar.")
     parser.add_argument("--overwrite", action="store_true", help="Explicitly replace an existing prediction output.")
+    parser.add_argument("--progress", choices=["auto", "bar", "json", "off"], default="auto",
+                        help="Progress on stderr: auto uses a terminal bar or plain log lines; json emits ECG_PROGRESS events; off disables it.")
     return parser
 
 
@@ -124,7 +127,9 @@ def write_result(result, output, overwrite=False):
 def main(argv=None, fixed_model=None):
     parser = build_parser(fixed_model)
     args = parser.parse_args(argv)
+    reporter = ProgressReporter(args.progress)
     try:
+        reporter.stage("Preparing inputs and output.")
         settings = settings_from_args(args)
         images = collect_images(args)
         destinations = output_paths(Path(args.output).expanduser().resolve())
@@ -148,14 +153,27 @@ def main(argv=None, fixed_model=None):
         if any(path.exists() for path in destinations) and not args.overwrite:
             raise ValueError("Prediction output already exists; choose a new name or use --overwrite.")
         from .inference import predict
-        result = predict(images, args.weights_dir, args.model, settings, overrides)
+        result = predict(images, args.weights_dir, args.model, settings, overrides,
+                         progress_callback=reporter if args.progress != "off" else None)
+        reporter.stage("Saving predictions.")
         write_result(result, destinations[0], args.overwrite)
+        reporter.complete("Predictions saved.")
     except ImportError:
+        reporter.error()
         parser.exit(2, "Missing inference dependency. Install a compatible torch/torchvision pair, then requirements-inference.txt.\n")
     except (ValueError, OSError) as error:
+        reporter.error()
         # Do not print source paths or full exception tracebacks by default.
         message = str(error) if isinstance(error, ValueError) else "Cannot access an input or output file."
         parser.exit(2, f"Error: {message}\n")
+    except KeyboardInterrupt:
+        reporter.error("Inference interrupted.")
+        parser.exit(130, "Inference interrupted.\n")
+    except Exception:
+        reporter.error()
+        raise
+    finally:
+        reporter.close()
     print(f"Saved {len(result['predictions'])} prediction(s); class order: tako, AMI.")
     return 0
 

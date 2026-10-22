@@ -200,7 +200,7 @@ def _validate_images(paths, input_policy):
     return hashes
 
 
-def _predict_one_model(model, name, paths, settings, device):
+def _predict_one_model(model, name, paths, settings, device, progress_callback=None):
     import numpy as np
     import torch
     from torch.utils.data import DataLoader
@@ -233,19 +233,32 @@ def _predict_one_model(model, name, paths, settings, device):
                     raise ValueError(f"The {name} model returned invalid two-class logits.")
                 accumulator[offset:offset + len(values)] += values.astype(np.float64)
                 offset += len(values)
+                if progress_callback is not None:
+                    progress_callback({
+                        "event": "progress", "message": "Running inference.",
+                        "completed": pass_index * len(paths) + offset, "total": spec.tta * len(paths),
+                        "model": name, "tta_index": pass_index + 1, "tta_total": spec.tta,
+                        "images_completed": offset, "images_total": len(paths),
+                    })
         if offset != len(paths):
             raise RuntimeError("The model did not return every input image.")
     return (accumulator / float(spec.tta)).astype(np.float32)
 
 
-def predict(images, weights_dir="weights", model="ensemble", settings=None, checkpoint_overrides=None):
+def predict(images, weights_dir="weights", model="ensemble", settings=None, checkpoint_overrides=None,
+            progress_callback=None):
     """Return predictions and provenance without storing source absolute paths.
 
     `images` is an ordered sequence of local image paths. `checkpoint_overrides`
     maps model names to local safetensors files (or their containing folders).
     The ViT config must be beside its tensor file. This function never fetches
     models from a network endpoint and never unpickles checkpoints.
+    An optional progress callback receives stage and completed-batch events;
+    no progress is emitted by default. Completion after saving belongs to the CLI.
     """
+    if progress_callback is not None:
+        progress_callback({"event": "stage", "message": "Initializing inference libraries.",
+                           "completed": 0, "total": 0, "model": None})
     import numpy as np
     import torch
 
@@ -267,6 +280,11 @@ def predict(images, weights_dir="weights", model="ensemble", settings=None, chec
         torch.backends.cudnn.allow_tf32 = False
         torch.backends.cudnn.benchmark = False
     paths = [Path(path).expanduser().resolve() for path in images]
+    total = sum(getattr(settings, name).tta for name in selected) * len(paths)
+    if progress_callback is not None:
+        progress_callback({"event": "stage", "message": "Checking inputs and checkpoints.",
+                           "completed": 0, "total": total, "model": None,
+                           "model_count": len(selected)})
     input_hashes = _validate_images(paths, settings.input_policy)
     weight_paths = _weight_paths(weights_dir, checkpoint_overrides)
     # Validate the presence/format of every requested model before allocating.
@@ -274,15 +292,38 @@ def predict(images, weights_dir="weights", model="ensemble", settings=None, chec
         if not weight_paths[name].is_file() or weight_paths[name].suffix.lower() != ".safetensors":
             raise ValueError(f"Missing exported .safetensors checkpoint for {name}.")
     outputs, checkpoint_metadata = {}, {}
-    for name in selected:
+    completed = 0
+    for model_index, name in enumerate(selected, 1):
+        if progress_callback is not None:
+            progress_callback({"event": "stage", "message": "Loading model.",
+                               "completed": completed, "total": total, "model": name,
+                               "model_index": model_index, "model_count": len(selected)})
         network, checkpoint_metadata[name] = _load_model(name, weight_paths[name], device)
         try:
-            outputs[name] = _predict_one_model(network, name, paths, settings, device)
+            model_callback = None
+            if progress_callback is not None:
+                progress_callback({"event": "stage", "message": "Running inference.",
+                                   "completed": completed, "total": total, "model": name,
+                                   "model_index": model_index, "model_count": len(selected),
+                                   "tta_index": 1, "tta_total": getattr(settings, name).tta,
+                                   "images_completed": 0, "images_total": len(paths)})
+
+                def model_callback(event):
+                    progress_callback({**event, "completed": completed + event["completed"],
+                                       "total": total, "model_index": model_index,
+                                       "model_count": len(selected)})
+
+            outputs[name] = _predict_one_model(network, name, paths, settings, device,
+                                               progress_callback=model_callback)
         finally:
             del network
             gc.collect()
             if device == "cuda":
                 torch.cuda.empty_cache()
+        completed += getattr(settings, name).tta * len(paths)
+    if progress_callback is not None:
+        progress_callback({"event": "stage", "message": "Combining predictions.",
+                           "completed": completed, "total": total, "model": None})
     if model == "ensemble":
         final_logits, probabilities = combine_logits([outputs[name] for name in MODEL_NAMES], settings.ensemble_weights)
     else:
