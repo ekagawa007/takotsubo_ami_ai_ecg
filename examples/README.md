@@ -20,13 +20,17 @@ Supply local inference weights as described in [weights/README.md](../weights/RE
 
 The examples do not supply patient images or download unpublished model weights. See [the full inference guide](../docs/inference.md) for arguments, preprocessing, output fields, and remaining validation.
 
+## Progress display
+
+The CLI defaults to `--progress auto`, which displays a live bar in an interactive terminal. Use `--progress bar` to request the text bar explicitly, `--progress json` for structured updates on stderr, or `--progress off` to disable progress output. The Colab notebook requests JSON updates and renders a live HTML bar while displaying ordinary logs immediately. Progress reporting does not change inference settings or predictions.
+
 ## Colab sessions and saved results
 
-Use a code revision that includes the current security fixes. Record the resolved commit SHA; do not pin the notebook to an older inference revision that lacks these changes.
+Use a code revision that includes the current security fixes and live progress support. Record the resolved commit SHA; do not pin the notebook to an older inference revision that lacks these changes.
 
 When the installation cell changes package versions, restart the Colab session and run the notebook from its first code cell. A marker outside the checkout prevents continued use of the same Python process after changes, including when an installation partially fails. The notebook does not restart or terminate the session automatically. Its Pillow check also rejects a stale or unsupported loaded version before opening an input image.
 
-Each inference execution chooses a new timestamped output name. It captures and displays stdout and stderr, stops on a nonzero exit code, and clears the previous in-memory result before starting. The two saved files belong to the same execution:
+Each inference execution chooses a new timestamped output name. It streams logs and errors as they arrive, stops on a nonzero exit code, and clears the previous in-memory result before starting. A native HTML progress bar shows overall completion, the current model, TTA view, image count, and elapsed time; no widget package is required. The percentage counts completed image/view evaluations, not estimated time. It can pause while models load or files are saved. Cancelling the cell or encountering a streaming/display error terminates the inference subprocess. Final success is shown only after both result files are saved. The two saved files belong to the same execution:
 
 - `prediction_<model>_<run>.json`: predictions, settings and model checksums.
 - `prediction_<model>_<run>.colab_run.json`: code commit, runtime information and the prediction file's SHA-256.

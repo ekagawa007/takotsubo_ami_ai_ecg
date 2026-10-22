@@ -1,12 +1,22 @@
 # Implementation and validation status
 
-Updated 2026-10-22 (JST); documentation revision 0.1.9.
+Updated 2026-10-22 (JST); documentation revision 0.1.11.
 
 ## Public source and inference implementation
 
 Original training, evaluation, human-study, and scheduling sources retain their filenames and notebook formats, with personal paths/examples generalized. The MIT License names Copyright (c) 2026 Eisuke Kagawa. Published `v0.1.1` contains the historical requirements record; that release predates the new inference implementation. Patient data, prediction tables, original training checkpoints, and private preparation records are excluded from the public tree.
 
 The selected inference states are ViT `checkpoint-6900`, ConvNeXtV2 `ckpt_0011.pth` ordinary `model` state, and MLP-Mixer `ckpt_0011.pth` ordinary `model` state. All 730 exported inference tensors matched their original names, shapes, dtypes and values. The training-only ViT `focal_loss.alpha` buffer was omitted explicitly. See [selected checkpoints](checkpoint_selection.md).
+
+## Current progress revision
+
+Package `0.2.0.dev2` adds English live model/TTA/batch progress to the CLI and Colab notebook. The CLI supports `--progress auto`, `bar`, `json` and `off`; progress goes to stderr and does not become part of prediction files. Colab consumes the progress events as the subprocess runs and updates its display. The progress count reflects completed image evaluations across TTA views, with elapsed time displayed separately. No new dependency or change to the inference settings or random-number sequence is introduced.
+
+On 2026-10-22, package `0.2.0.dev2` passed all 38 tests: 17 original inference tests, 14 security tests and seven progress tests. The isolated native Windows environment used Python 3.13.15, torch 2.11.0+cpu, torchvision 0.26.0+cpu, Pillow 13.0.0, numpy 2.2.6, timm 1.0.22, transformers 4.57.3 and safetensors 0.7.0.
+
+The three actual selected models also completed inference on one synthetic 480 x 480 RGB image using the paper TTA settings, CPU/float32, batch size 1, zero workers and seed 1234. Progress events arrived while the subprocess was running, the completed count reached 57/57, and the completion event followed creation of the output file. The saved prediction values exactly matched the preceding `0.2.0.dev1` CPU baseline; inference settings and checkpoint identities were unchanged. This comparison covers that image and execution configuration.
+
+A separate notebook harness passed seven simulated subprocess cases. These checks exercise notebook handling without a live Colab runtime. Actual Colab and WSL/GPU execution of `0.2.0.dev2` has not been performed. The completed CPU and WSL results below remain records for package `0.2.0.dev1`.
 
 ## Completed validation of the preceding inference revision
 
@@ -23,7 +33,7 @@ The WSL comparison used Python 3.12.12, torch 2.9.0+cu130, and torchvision 0.24.
 
 Earlier development checks at that revision also passed 17 regression tests, exact preprocessing comparisons with the original evaluator transforms, and selected-model inference on a generated image using native Windows/Python 3.10/CPU PyTorch 2.9.0. Those results describe the earlier environment; they do not validate the new Pillow 13 environment.
 
-## Completed CPU validation of the current security revision
+## Completed CPU validation of security revision 0.2.0.dev1
 
 On 2026-10-22, the updated inference package `0.2.0.dev1` passed all 31 tests (17 existing inference tests and 14 security tests) in a new isolated native Windows environment. It used Python 3.13.15, torch 2.11.0+cpu, torchvision 0.26.0+cpu, Pillow 13.0.0, numpy 2.2.6, timm 1.0.22, transformers 4.57.3 and safetensors 0.7.0.
 
@@ -31,7 +41,7 @@ The actual three selected safetensors models also completed inference on one det
 
 A separate preprocessing check compared the preceding Pillow 12.0.0/torch 2.9.0/torchvision 0.24.0 CPU environment with the updated Pillow 13.0.0/torch 2.11.0/torchvision 0.26.0 CPU environment. For one generated 480 x 480 RGB image and fixed per-view seeds, all 57 transformed-tensor SHA-256 hashes matched exactly (24 ViT, 1 ConvNeXtV2 and 32 MLP-Mixer views). This checks those direct transforms; it does not establish DataLoader-worker or full-dataset TTA equivalence.
 
-## Completed WSL/CUDA no-TTA validation of the current security revision
+## Completed WSL/CUDA no-TTA validation of security revision 0.2.0.dev1
 
 On 2026-10-22, the updated CLI in package `0.2.0.dev1` was run on the same 10 archived real ECG images with Python 3.12.12, torch 2.9.0+cu130, torchvision 0.24.0+cu130, Pillow 13.0.0, numpy 2.2.6, timm 1.0.22, transformers 4.57.3 and safetensors 0.7.0. The image and selected safetensors weight hashes matched the earlier comparison. Settings were CUDA, float32, TTA 1 for every model, batch size 1, four workers, seed 1234 and TF32 disabled.
 
@@ -43,7 +53,7 @@ This revision requires Pillow 13.0.0 and Python 3.11 or newer for inference, rej
 
 The Colab notebook now makes dependency-change restarts explicit, creates separate results for repeated runs, reports captured errors, and refuses to read a prior result after a failed subprocess. Distributed notebooks contain no saved runtime outputs.
 
-The earlier paired WSL and Colab checks remain provenance for the preceding commit. The updated package has passed the CPU checks and WSL/CUDA no-TTA comparison described above. Colab execution with Pillow 13.0.0 and WSL execution using the paper TTA settings remain unverified; the completed no-TTA comparison does not establish historical paper-TTA numerical parity.
+The earlier paired WSL and Colab checks remain provenance for the preceding commit. Package `0.2.0.dev1` passed the CPU checks and WSL/CUDA no-TTA comparison described above. The preceding English Colab notebook was subsequently reported to run successfully; its saved runtime record was not reviewed for this update. WSL execution using the paper TTA settings remains unverified, and the completed no-TTA comparison does not establish historical paper-TTA numerical parity.
 
 ## Remaining reproduction work
 
