@@ -1,6 +1,9 @@
 # takotsubo_ami_ai_ecg
 
-**Documentation version:** `0.1.7`  
+**Documentation version:** `0.1.9`
+
+**Inference package version:** `0.2.0.dev1`
+
 **Last updated:** 2026-10-22 (JST)
 
 Research code for ECG-image models distinguishing takotsubo syndrome from acute anterior STEMI, including model development, ensemble evaluation, and a human diagnostic study.
@@ -9,7 +12,11 @@ Research code for ECG-image models distinguishing takotsubo syndrome from acute 
 
 The original training, evaluation, and human-study sources are retained in their supplied formats, with personal paths and identifying-looking examples generalized. The published [v0.1.1 release](https://github.com/ekagawa007/takotsubo_ami_ai_ecg/releases/tag/v0.1.1) adds the historical requirements and training-environment documentation to the initial research-source release.
 
-This revision adds shared inference code, per-model and ensemble CLI examples, and a Google Colab notebook. The paper settings are the defaults and can be changed with arguments. Selected model weights must be supplied locally; they are not included in the Git repository. Fresh WSL/Colab validation and comparison with the original patient-image predictions remain pending. This repository provides research software; no clinical deployment validation is claimed.
+This revision adds shared inference code, per-model and ensemble CLI examples, and a Google Colab notebook. The paper settings are the defaults and can be changed with arguments. Selected model weights must be supplied locally; they are not included in the Git repository. At commit `ff1b9bef9596a33cacf9dd67d42cd78d390a6211`, paired WSL inference on 10 private ECG images agreed with the original evaluators within the configured numerical tolerance using float32 and no TTA. Colab inference on one synthetic image completed on an NVIDIA A100 with the paper TTA settings. Those earlier checks used Pillow 12.0.0. The updated package with Pillow 13.0.0 has now also passed the scoped WSL/CUDA no-TTA check described below; updated Colab execution remains pending. This repository provides research software; no clinical deployment validation is claimed.
+
+This security revision requires Python 3.11 or newer and Pillow 13.0.0 for new inference installations, restricts ViT configuration fields, and requires PyTorch 2.10.0 or newer for checkpoint export. The Colab notebook handles dependency-change restarts, creates a separate output for each run, and displays subprocess errors. The original training environment snapshot is preserved.
+
+The updated package `0.2.0.dev1` passed all 31 tests and inference with the three selected models on one synthetic 480 x 480 image using the paper TTA settings in an isolated native Windows CPU environment with Python 3.13.15, torch 2.11.0, torchvision 0.26.0 and Pillow 13.0.0. Result saving and the raw-logit ensemble calculation were checked. On WSL/CUDA with Pillow 13.0.0, the updated CLI also matched the saved original-evaluator results for the same 10 real ECG images using float32 and no TTA: all three models and the ensemble passed the configured tolerance, with zero class changes. This compared against frozen earlier CSVs; the original evaluators were not rerun. Updated Colab execution, WSL paper-TTA execution and historical paper-TTA numerical parity remain unverified. See [validation details and remaining checks](docs/implementation_status.md).
 
 ## Contents
 
@@ -32,7 +39,7 @@ This revision adds shared inference code, per-model and ensemble CLI examples, a
 
 ## Inference quick start
 
-From the repository root, using an environment with a suitable PyTorch/torchvision installation:
+From the repository root, using Python 3.11 or newer with a suitable PyTorch/torchvision installation:
 
 ```bash
 python -m pip install -r requirements-inference.txt
@@ -71,7 +78,7 @@ The root [requirements.txt](requirements.txt) preserves all 165 entries and orig
 
 | Workflow | Target environment | Validation status |
 |---|---|---|
-| New inference CLIs and shared package | Linux/WSL; same implementation in Colab | Original patient-image prediction comparison and fresh target-runtime validation pending |
+| New inference CLIs and shared package | Linux/WSL; same implementation in Colab | Prior revision: paired no-TTA agreement on 10 real ECG images in WSL; paper-TTA execution on one synthetic image in Colab. Security revision: 31 tests and synthetic-image paper-TTA inference passed on native Windows CPU; WSL/CUDA no-TTA results for 10 real images matched frozen original-evaluator CSVs. Updated Colab and WSL paper-TTA execution remain pending |
 | Original training and evaluation | Linux/WSL or Colab | Source retained; complete reproduction pending |
 | Human-study administrator | Interactive Linux/WSL terminal with graphical display | Source retained; environment validation pending |
 
@@ -85,7 +92,7 @@ Code and documentation are available in the [GitHub repository](https://github.c
 
 The code is licensed under the [MIT License](LICENSE). Copyright (c) 2026 Eisuke Kagawa. External libraries retain their respective licenses. Model weights are not included in this code release; their license will be documented separately. The complete paper author list and final paper metadata remain to be confirmed. See the [publication and licensing plan](docs/publication_plan_ja.md).
 
-Documentation version `0.1.7` identifies this README revision. Published release [v0.1.1](https://github.com/ekagawa007/takotsubo_ami_ai_ecg/releases/tag/v0.1.1), commit `70ae84ce96bf939ef117b6d2924318aef8716b81`, identifies the requirements-containing source release. It does not include this later inference revision. Existing release tags are retained.
+Documentation version `0.1.9` identifies this README revision; `0.2.0.dev1` identifies the current inference package. Published release [v0.1.1](https://github.com/ekagawa007/takotsubo_ami_ai_ecg/releases/tag/v0.1.1), commit `70ae84ce96bf939ef117b6d2924318aef8716b81`, identifies the requirements-containing source release. It does not include this later inference revision. Existing release tags are retained.
 
 ## Revision history
 
@@ -93,6 +100,8 @@ Documentation versions track README revisions. Update the version/date above and
 
 | Date (JST) | Documentation version | Changes |
 |---|---|---|
+| 2026-10-22 | 0.1.9 | Recorded the updated package 0.2.0.dev1/Pillow 13.0.0 WSL/CUDA float32 no-TTA check on 10 real ECG images against frozen original-evaluator CSVs. All three models and the ensemble passed tolerance with zero class changes; image and selected-weight hashes matched. The original evaluators were not rerun. Updated Colab, WSL paper-TTA execution and historical paper-TTA numerical parity remain unverified. |
+| 2026-10-22 | 0.1.8 | Required Pillow 13.0.0/Python 3.11+ for inference, restricted ViT configuration loading, and required PyTorch 2.10+ for checkpoint export. Improved Colab restart guidance, unique result filenames and error reporting. Recorded the completed WSL no-TTA comparison and Colab paper-TTA execution at the prior commit, separately from this revision's 31 passing tests and CPU paper-TTA execution check; WSL/Colab revalidation remains pending. Preserved the historical requirements snapshot. |
 | 2026-10-22 | 0.1.7 | Removed internal source-mapping, publication-edit, and security-review records and their verifier from the public tree. Added shared inference, per-model/ensemble CLI and Colab examples with configurable paper defaults; documented the selected ordinary ConvNeXtV2 checkpoint, inference-only weight export, and remaining prediction/runtime validation. Recorded the published requirements-containing v0.1.1 release. |
 | 2026-10-21 | 0.1.6 | Consolidated the dependency record into a single root requirements.txt with an undated filename. Preserved all 165 package pins and original file bytes; retained the snapshot date (2025-12-11) in documentation and updated links. Research code and installation order are unchanged. |
 | 2026-10-21 | 0.1.5 | Added the unchanged 2025-12-11 requirements snapshot (165 pinned packages), root requirements entry point, and Python 3.12.12 / WSL Ubuntu 22.04.5 / RTX 5090 or Colab A100 training environment. Added WSL installation guidance, distinguished the currently reported driver from the historical environment, and recorded the published v0.1.0 release. Research sources and checkpoint-selection wording are unchanged; clean installation and model reproduction remain unvalidated. |

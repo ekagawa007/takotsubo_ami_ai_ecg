@@ -2,7 +2,9 @@
 """Export private research checkpoints as verified, tensor-only inference files.
 
 Only run this command on checkpoints you own or otherwise trust. PyTorch inputs
-are loaded with weights_only=True; custom Python objects are never allowlisted.
+are loaded with weights_only=True on PyTorch 2.10.0 or newer; custom Python
+objects are never allowlisted. Restricted loading is not a substitute for
+trusting the origin of a checkpoint.
 The original files are read-only inputs. Optimizers, arguments, SWA states,
 training histories, paths, and other checkpoint metadata are not exported.
 """
@@ -35,6 +37,19 @@ PROCESSOR_KEYS = frozenset({
     "image_processor_type", "image_std", "resample", "rescale_factor", "size",
 })
 TENSOR_NAME = re.compile(r"[A-Za-z0-9_.]+\Z")
+
+
+def require_patched_torch() -> None:
+    """Fail before touching checkpoint files on vulnerable/unverified versions."""
+    match = re.fullmatch(
+        r"(\d+)\.(\d+)\.(\d+)(?:\.post\d+)?(?:\+[A-Za-z0-9.]+)?",
+        str(torch.__version__),
+    )
+    if match is None or tuple(map(int, match.groups())) < (2, 10, 0):
+        raise ValueError(
+            "Checkpoint export requires a stable PyTorch release >= 2.10.0. "
+            "Use a separate updated export environment and only trusted checkpoints."
+        )
 
 
 def file_sha256(path: Path) -> str:
@@ -145,6 +160,7 @@ def export_bundle(vit_checkpoint: Path, vit_processor: Path, convnextv2_checkpoi
     directory when retrying. This avoids directory-renaming failures in Windows
     synchronized folders while keeping all original checkpoints untouched.
     """
+    require_patched_torch()
     output_dir = output_dir.resolve()
     if output_dir.exists():
         raise FileExistsError("Output directory already exists; choose a new directory")

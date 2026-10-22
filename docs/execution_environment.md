@@ -1,6 +1,6 @@
 # Execution environments
 
-Updated 2026-10-22 (JST); documentation revision 0.1.7.
+Updated 2026-10-22 (JST); documentation revision 0.1.9.
 
 ## Recorded training environment
 
@@ -33,6 +33,41 @@ The public filename has no date suffix; the date of the supplied record is retai
 
 The CUDA build suffix does not identify the local CUDA Toolkit installation or the historical NVIDIA driver. Earlier commented installation examples in the original notebooks are retained as historical source; the requirements snapshot dated 2025-12-11 is the supplied later environment record.
 
+## Completed inference checks before the security update
+
+The following environments ran code commit `ff1b9bef9596a33cacf9dd67d42cd78d390a6211` on 2026-10-22. They describe new validation runs, separately from the historical training record above.
+
+| Item | WSL paired comparison | Colab execution check |
+|---|---|---|
+| Input and scope | 10 private real ECG images, old evaluators versus new CLI, no TTA | One synthetic image with paper TTA settings |
+| Device / precision | CUDA / float32 for all models | NVIDIA A100-SXM4-40GB / CUDA / float32 for all models |
+| Python | 3.12.12 | 3.13.15 |
+| torch | 2.9.0+cu130 | 2.11.0+cu130 |
+| torchvision | 0.24.0+cu130 | 0.26.0+cu130 |
+| timm / transformers | 1.0.22 / 4.57.3 | 1.0.22 / 4.57.3 |
+| Pillow / numpy / safetensors | 12.0.0 / 2.2.6 / 0.7.0 | 12.0.0 / 2.2.6 / 0.7.0 |
+| Result | All models and ensemble within `atol=1e-5`, `rtol=1e-5`; zero class differences | Inference and result saving completed |
+
+## Current security revision: verified CPU development environment
+
+On 2026-10-22, package `0.2.0.dev1` passed all 31 tests in a new isolated native Windows environment: Python 3.13.15, torch 2.11.0+cpu, torchvision 0.26.0+cpu, Pillow 13.0.0, numpy 2.2.6, timm 1.0.22, transformers 4.57.3 and safetensors 0.7.0. The three actual selected models also completed float32 inference and result saving on one synthetic 480 x 480 RGB image with the paper TTA settings, batch size 1 and zero workers. The raw-logit ensemble calculation was checked independently.
+
+This is an updated CPU development check. The separate WSL/CUDA no-TTA result is recorded below; updated Colab and WSL paper-TTA execution remain unverified.
+
+## Current security revision: verified WSL/CUDA no-TTA environment
+
+On 2026-10-22, package `0.2.0.dev1` completed no-TTA inference on the same 10 archived real ECG images using Python 3.12.12, torch 2.9.0+cu130, torchvision 0.24.0+cu130, Pillow 13.0.0, numpy 2.2.6, timm 1.0.22, transformers 4.57.3 and safetensors 0.7.0. Image and selected safetensors weight hashes matched the preceding paired run. Settings were CUDA/float32, TTA 1 for all models, batch size 1, four workers, seed 1234 and TF32 disabled.
+
+The updated CLI matched the frozen original-evaluator CSVs within `atol=1e-5`, `rtol=1e-5`, with zero class changes for all three models and the ensemble. The original evaluators were not rerun. This scope establishes neither updated WSL paper-TTA execution nor historical paper-TTA numerical parity.
+
+## New inference and checkpoint-export requirements
+
+The current inference requirements use **Pillow 13.0.0** and therefore require **Python 3.11 or newer**. The loader checks the Pillow version before opening input images. ViT configuration is limited to supported fields to prevent configuration-controlled external code loading. Keep transformers 4.57.3 for the selected ViT checkpoint architecture; this change does not assume compatibility with Transformers 5.
+
+Checkpoint export from trusted `.pth` files additionally requires a **stable PyTorch version of at least 2.10.0**. Use a compatible torch/torchvision pair in that export environment. The safetensors-only inference path is separate, so the already exported and verified assets do not require another export. Preserve the original training snapshot as a historical record; do not install it over the new inference environment to resolve dependencies.
+
+The preceding-commit checks used Pillow 12.0.0. The updated Pillow 13.0.0 environment has passed the scoped CPU and WSL/CUDA no-TTA checks above; updated Colab and WSL paper-TTA execution remain pending. See [implementation status](implementation_status.md).
+
 ## Runtime targets
 
 The repository can be stored or edited on native Windows 11. Model execution targets Linux, including WSL, and Google Colab. This choice does not require converting the original ViT training notebooks into Python scripts.
@@ -44,7 +79,7 @@ The repository can be stored or edited on native Windows 11. Model execution tar
 | Original dataset/CSV evaluation | Configure data and output locations | Configure data and output locations |
 | Original human-study administrator | Interactive terminal and a working graphical display required | Not a standard notebook workflow; a separate interactive UI would be needed |
 
-The table describes runtime targets for the retained code and new inference examples. The reported historical training setup is recorded above. Final weights and baseline predictions are not included, and clean-environment reproduction has not been performed during publication preparation.
+The table describes runtime targets for the retained code and new inference examples. The reported historical training setup is recorded above. Final weights and baseline predictions are not included in the Git repository. The preceding inference revision passed the scoped WSL/Colab checks listed above. The updated package has also passed the CPU and WSL/CUDA no-TTA checks; full training-environment reconstruction, updated Colab and WSL paper-TTA execution remain separate tasks.
 
 ## Paths
 
@@ -88,7 +123,7 @@ On Linux Jupyter, use the actual Linux checkout path instead. Configure notebook
 
 ## Reconstructing the WSL/Linux environment
 
-These steps are based on the supplied dependency record and the official PyTorch distribution instructions. They have not yet been tested in a clean environment. Use a dedicated environment with Python **3.12.12** already available and a GPU driver compatible with the CUDA 13.0 build. Ubuntu's default Python is not a substitute for the recorded Python version.
+These steps reconstruct the historical 165-package training snapshot. That complete reconstruction has not yet been tested in a clean environment. Use it only with trusted research inputs and checkpoints; use the current inference requirements and the separate patched export environment for their respective workflows. Use a dedicated environment with Python **3.12.12** already available and a GPU driver compatible with the CUDA 13.0 build. Ubuntu's default Python is not a substitute for the recorded Python version.
 
 Run from the repository root in WSL/Linux:
 
@@ -120,7 +155,7 @@ An installation/import check does not establish model reproduction. Configure da
 
 The reported Colab training setup used Python 3.12.12 and an NVIDIA A100. Colab provides a managed runtime whose current Python, GPU, driver, and preinstalled package versions must be checked for each reproduction attempt. The local Ubuntu version and local driver above do not describe the Colab runtime.
 
-Use the historical requirements as the version reference. The complete 165-package snapshot includes notebook-server and NVIDIA support packages; it has not been validated as an in-place replacement for Colab's managed environment. No one-command Colab installation is claimed here. The new `examples/colab_inference.ipynb` installs inference dependencies separately and uses the same shared inference code as the CLI. Fresh Colab execution validation remains pending; see [the inference guide](inference.md).
+Use the historical requirements as the version reference. The complete 165-package snapshot includes notebook-server and NVIDIA support packages; it has not been validated as an in-place replacement for Colab's managed environment. No one-command Colab installation is claimed here. The new `examples/colab_inference.ipynb` installs inference dependencies separately and uses the same shared inference code as the CLI. The preceding inference revision completed the scoped Colab run recorded above. After the new inference dependency installation changes a loaded package, restart the Colab session and rerun the setup cells before inference. The updated notebook and Pillow 13.0.0 still require a new Colab execution check; see [the inference guide](inference.md).
 
 ### Other workflows
 
@@ -135,4 +170,4 @@ Use the historical requirements as the version reference. The complete 165-packa
 
 ## Current verification
 
-The historical environment is documented from the supplied record. The new inference package and examples have their own dependency list and validation process. A successful package import or model load is not evidence of complete scientific reproduction. Fresh WSL/Linux and Colab validation, and comparison against original patient-image predictions, remain required. See [implementation status](implementation_status.md).
+The historical environment is documented from the supplied record. The new inference package and examples have their own dependency list and validation process. A successful package import or model load is not evidence of complete scientific reproduction. The preceding revision passed a paired no-TTA check on 10 real images in WSL and paper-TTA execution on one synthetic image in Colab. The current package passed 31 tests and selected-model paper-TTA execution on a synthetic image in the updated Windows CPU environment. The updated package also passed the WSL/CUDA no-TTA comparison on 10 real images against frozen original-evaluator CSVs. Historical paper-TTA numerical parity, updated Colab and WSL paper-TTA execution remain pending. See [implementation status](implementation_status.md).

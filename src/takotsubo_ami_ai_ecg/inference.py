@@ -17,6 +17,7 @@ import platform
 import random
 
 from . import __version__
+from .security import require_patched_pillow, validate_vit_config
 from .settings import IMAGE_SIZE, LABELS, MEAN, MODEL_NAMES, STD, InferenceSettings
 
 
@@ -109,6 +110,7 @@ class ImageDataset:
         return len(self.paths)
 
     def __getitem__(self, index):
+        require_patched_pillow()
         from PIL import Image
 
         try:
@@ -139,17 +141,16 @@ def _load_model(name, path, device):
         raise ValueError(f"Missing tensor-only checkpoint for {name}.")
     metadata = {"filename": "model.safetensors", "sha256": sha256_file(path)}
     if name == "vit":
-        from transformers import ViTConfig, ViTForImageClassification
-
         config_path = path.parent / "config.json"
         if not config_path.is_file():
             raise ValueError("ViT requires config.json beside model.safetensors.")
-        config_data = json.loads(config_path.read_text(encoding="utf-8"))
-        if config_data.get("model_type") != "vit":
-            raise ValueError("The ViT checkpoint config must have model_type=vit.")
-        labels = config_data.get("id2label", {})
-        if labels != {"0": "tako", "1": "AMI"}:
-            raise ValueError("ViT config must explicitly map 0=tako and 1=AMI.")
+        with config_path.open("rb") as stream:
+            config_bytes = stream.read(65537)
+        if len(config_bytes) > 65536:
+            raise ValueError("ViT config exceeds the supported file size.")
+        config_data = validate_vit_config(json.loads(config_bytes.decode("utf-8")))
+        from transformers import ViTConfig, ViTForImageClassification
+
         config = ViTConfig.from_dict(config_data)
         if config.num_labels != 2 or config.num_channels != 3 or config.image_size != IMAGE_SIZE:
             raise ValueError("Expected a 480-pixel, RGB, two-class ViT checkpoint.")
@@ -175,6 +176,7 @@ def _load_model(name, path, device):
 
 
 def _validate_images(paths, input_policy):
+    require_patched_pillow()
     from PIL import Image
 
     if not paths:
