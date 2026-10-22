@@ -1,6 +1,6 @@
 # takotsubo_ami_ai_ecg
 
-**Documentation version:** `0.1.9`
+**Documentation version:** `0.1.10`
 
 **Inference package version:** `0.2.0.dev1`
 
@@ -92,7 +92,7 @@ Code and documentation are available in the [GitHub repository](https://github.c
 
 The code is licensed under the [MIT License](LICENSE). Copyright (c) 2026 Eisuke Kagawa. External libraries retain their respective licenses. Model weights are not included in this code release; their license will be documented separately. The complete paper author list and final paper metadata remain to be confirmed. See the [publication and licensing plan](docs/publication_plan_ja.md).
 
-Documentation version `0.1.9` identifies this README revision; `0.2.0.dev1` identifies the current inference package. Published release [v0.1.1](https://github.com/ekagawa007/takotsubo_ami_ai_ecg/releases/tag/v0.1.1), commit `70ae84ce96bf939ef117b6d2924318aef8716b81`, identifies the requirements-containing source release. It does not include this later inference revision. Existing release tags are retained.
+Documentation version `0.1.10` identifies this README revision; `0.2.0.dev1` identifies the current inference package. Published release [v0.1.1](https://github.com/ekagawa007/takotsubo_ami_ai_ecg/releases/tag/v0.1.1), commit `70ae84ce96bf939ef117b6d2924318aef8716b81`, identifies the requirements-containing source release. It does not include this later inference revision. Existing release tags are retained.
 
 ## Revision history
 
@@ -100,6 +100,7 @@ Documentation versions track README revisions. Update the version/date above and
 
 | Date (JST) | Documentation version | Changes |
 |---|---|---|
+| 2026-10-22 | 0.1.10 | Translated the public Colab notebook instructions, comments and user-facing messages into English. Execution behavior and paper-default settings are unchanged. |
 | 2026-10-22 | 0.1.9 | Recorded the updated package 0.2.0.dev1/Pillow 13.0.0 WSL/CUDA float32 no-TTA check on 10 real ECG images against frozen original-evaluator CSVs. All three models and the ensemble passed tolerance with zero class changes; image and selected-weight hashes matched. The original evaluators were not rerun. Updated Colab, WSL paper-TTA execution and historical paper-TTA numerical parity remain unverified. |
 | 2026-10-22 | 0.1.8 | Required Pillow 13.0.0/Python 3.11+ for inference, restricted ViT configuration loading, and required PyTorch 2.10+ for checkpoint export. Improved Colab restart guidance, unique result filenames and error reporting. Recorded the completed WSL no-TTA comparison and Colab paper-TTA execution at the prior commit, separately from this revision's 31 passing tests and CPU paper-TTA execution check; WSL/Colab revalidation remains pending. Preserved the historical requirements snapshot. |
 | 2026-10-22 | 0.1.7 | Removed internal source-mapping, publication-edit, and security-review records and their verifier from the public tree. Added shared inference, per-model/ensemble CLI and Colab examples with configurable paper defaults; documented the selected ordinary ConvNeXtV2 checkpoint, inference-only weight export, and remaining prediction/runtime validation. Recorded the published requirements-containing v0.1.1 release. |
