@@ -1,0 +1,53 @@
+{
+  "schema_version": 1,
+  "version": "0.2.0",
+  "url": "https://github.com/ekagawa007/takotsubo_ami_ai_ecg/releases/download/v0.2.0/takotsubo_ami_ai_ecg_weights_v0.2.0.zip",
+  "archive_sha256": "cba7d135b1e2f5491f1c0ccab93aef8e3b65570586f8052029540b94e7fbf510",
+  "archive_size_bytes": 958701120,
+  "files": {
+    "weights/LICENSE-MIT.txt": {
+      "sha256": "e60fe71eb3a1085db594f8356a0415696aa294731f3757f335d993e625df569e",
+      "size_bytes": 1070
+    },
+    "weights/THIRD_PARTY_NOTICES.md": {
+      "sha256": "6495fac2eb91bbdddf6bc3535e54913e8fa6d835753846432d8a4000f49281b6",
+      "size_bytes": 4001
+    },
+    "weights/WEIGHTS_LICENSE.md": {
+      "sha256": "dca0dbb0db5415eaeeb079a54e0e0372d5693e5bddc87c93489f272fc4ebbfb6",
+      "size_bytes": 3189
+    },
+    "weights/convnextv2/model.safetensors": {
+      "sha256": "906d91b6f047a0241989642157b5e92df7ee80961e49b47a8f366790935385fb",
+      "size_bytes": 350817752
+    },
+    "weights/licenses/Apache-2.0.txt": {
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "size_bytes": 11358
+    },
+    "weights/licenses/CC-BY-NC-4.0.txt": {
+      "sha256": "ffe3b1e0b58c1f1250ce48f84d8c37328f9a1ff59bb77b63bc97480cf2778b64",
+      "size_bytes": 19337
+    },
+    "weights/manifest.json": {
+      "sha256": "81c1176cbbf9c3bc87a3b76dbdf36affff5e114704abdf297bee140d43c96144",
+      "size_bytes": 2234
+    },
+    "weights/mlpmixer/model.safetensors": {
+      "sha256": "b03f9a2729e7cdd33a4d084f911ea426b3fc6ca8997f51cf3df2fbf6f590da11",
+      "size_bytes": 262452680
+    },
+    "weights/vit/config.json": {
+      "sha256": "4086eedef1e4f10a302eede4258a82791d47730f7c556f6bfb94cd2f9b7a1de3",
+      "size_bytes": 747
+    },
+    "weights/vit/model.safetensors": {
+      "sha256": "62c492cdd1ed0d5393b5260ee921234edf6d78a5321353071e4f81fb2a060149",
+      "size_bytes": 345386656
+    },
+    "weights/vit/preprocessor_config.json": {
+      "sha256": "091ceb32ac8aab3464014fb2e9878875fcfbb94e11696ca2e0272c4f54278e0e",
+      "size_bytes": 374
+    }
+  }
+}

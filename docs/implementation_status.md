@@ -1,6 +1,6 @@
 # Implementation and validation status
 
-Updated 2026-10-22 (JST); documentation revision 0.1.11.
+Updated 2026-10-22 (JST); documentation revision 0.1.12.
 
 ## Public source and inference implementation
 
@@ -8,7 +8,17 @@ Original training, evaluation, human-study, and scheduling sources retain their 
 
 The selected inference states are ViT `checkpoint-6900`, ConvNeXtV2 `ckpt_0011.pth` ordinary `model` state, and MLP-Mixer `ckpt_0011.pth` ordinary `model` state. All 730 exported inference tensors matched their original names, shapes, dtypes and values. The training-only ViT `focal_loss.alpha` buffer was omitted explicitly. See [selected checkpoints](checkpoint_selection.md).
 
-## Current progress revision
+## Weight distribution 0.2.0
+
+Version `0.2.0` includes a separate `takotsubo_ami_ai_ecg_weights_v0.2.0.zip` Release asset and `SHA256SUMS.txt`, a weight downloader, a Colab Release-download default with a local alternative, and a [model card](../MODEL_CARD.md). The three selected safetensors files total 958,657,088 bytes and match their expected asset-manifest hashes. Original training checkpoints and patient data remain excluded.
+
+Package `0.2.0` identifies this distribution. Confirmed [weight terms](../WEIGHTS_LICENSE.md) and [upstream notices](../THIRD_PARTY_NOTICES.md) are separate from the code's MIT License: ViT uses CC BY-NC 4.0, and author-owned ConvNeXtV2 and MLP-Mixer contributions use MIT terms. The complete bundle includes the ViT noncommercial condition. The local archive and inference checks below have passed; live public Release-download and actual Colab-download execution remain unverified. Earlier inference checks retain their original version and scope.
+
+On 2026-10-22, package `0.2.0` passed all 50 tests (the prior 38 tests plus 12 downloader tests), and a separate notebook harness passed five simulated download cases. The 958,701,120-byte release ZIP was installed with the new helper into a fresh directory, with all 11 expected file SHA-256 checks passing. This exercised the local release archive; live public URL download was not part of that check.
+
+The three installed models then completed inference on one synthetic 480 x 480 RGB image using the paper TTA settings, CPU/float32, batch size 1, zero workers and seed 1234. Prediction values exactly matched the prior CPU baseline. Live progress arrived during execution, reached 57/57 image evaluations, and reported completion after output saving. The runtime was native Windows with Python 3.13.15, torch 2.11.0+cpu, torchvision 0.26.0+cpu, Pillow 13.0.0, numpy 2.2.6, timm 1.0.22, transformers 4.57.3 and safetensors 0.7.0.
+
+## Completed progress revision 0.2.0.dev2
 
 Package `0.2.0.dev2` adds English live model/TTA/batch progress to the CLI and Colab notebook. The CLI supports `--progress auto`, `bar`, `json` and `off`; progress goes to stderr and does not become part of prediction files. Colab consumes the progress events as the subprocess runs and updates its display. The progress count reflects completed image evaluations across TTA views, with elapsed time displayed separately. No new dependency or change to the inference settings or random-number sequence is introduced.
 
@@ -16,7 +26,7 @@ On 2026-10-22, package `0.2.0.dev2` passed all 38 tests: 17 original inference t
 
 The three actual selected models also completed inference on one synthetic 480 x 480 RGB image using the paper TTA settings, CPU/float32, batch size 1, zero workers and seed 1234. Progress events arrived while the subprocess was running, the completed count reached 57/57, and the completion event followed creation of the output file. The saved prediction values exactly matched the preceding `0.2.0.dev1` CPU baseline; inference settings and checkpoint identities were unchanged. This comparison covers that image and execution configuration.
 
-A separate notebook harness passed seven simulated subprocess cases. These checks exercise notebook handling without a live Colab runtime. Actual Colab and WSL/GPU execution of `0.2.0.dev2` has not been performed. The completed CPU and WSL results below remain records for package `0.2.0.dev1`.
+A separate notebook harness passed seven simulated subprocess cases. These checks exercise notebook handling without a live Colab runtime. The English Colab notebook with progress was subsequently reported to run successfully; its saved runtime record was not reviewed for this update. WSL/GPU execution of `0.2.0.dev2` remains unverified. The completed CPU and WSL results below remain records for package `0.2.0.dev1`.
 
 ## Completed validation of the preceding inference revision
 
@@ -60,4 +70,4 @@ The earlier paired WSL and Colab checks remain provenance for the preceding comm
 - Numerical parity with historical predictions generated using the paper TTA settings remains unconfirmed. Match image preparation, dataset order, augmentation randomness, precision and package versions when making that comparison.
 - A complete training rerun, all-dataset evaluation reproduction and human-study runtime validation have not been completed during this publication update.
 - Complete the links from selected checkpoints to training runs, initialization chains, validation splits and loss records using the actual private records.
-- Document final weight-distribution terms, actual asset URLs, checksums and the paper-specific source version before distributing model assets. Existing release tags are retained.
+- Record the final release commit, assets and checksums together, then verify the live public download and Colab workflow. Existing release tags are retained.
