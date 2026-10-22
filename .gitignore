@@ -29,8 +29,12 @@ Thumbs.db
 *.safetensors
 *.bin
 checkpoint-*/
-/weights/*
-!/weights/README.md
+models_weight/
+/weights/**/*.safetensors
+/weights/**/*.pt
+/weights/**/*.pth
+/weights/**/*.ckpt
+/weights/**/*.bin
 
 # Runtime data and output; historical supplied training logs remain trackable
 /data/

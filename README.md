@@ -1,89 +1,99 @@
 # takotsubo_ami_ai_ecg
 
-**Documentation version:** `0.1.6`  
-**Last updated:** 2026-10-21 (JST)
+**Documentation version:** `0.1.7`  
+**Last updated:** 2026-10-22 (JST)
 
 Research code for ECG-image models distinguishing takotsubo syndrome from acute anterior STEMI, including model development, ensemble evaluation, and a human diagnostic study.
 
 ## Current status
 
-The research-source snapshot contains the 35 originally supplied files and the recovered `ek_schedule_exe.py` scheduling helper. Original filenames and notebook formats are retained. Public copies generalize personal paths, workstation labels, and the identifying-looking image example; original and current SHA-256 hashes and edit reasons are recorded in the [source mapping](docs/source_file_mapping.csv) and [publication edit log](docs/publication_edits.csv). Personal Colab execution metadata has also been removed from two notebooks; cell sources and settings are unchanged. The helper is supplied unchanged. The initial research-source release is published as [v0.1.0](https://github.com/ekagawa007/takotsubo_ami_ai_ecg/releases/tag/v0.1.0). This documentation revision adds the supplied historical requirements snapshot and the reported training environments. Final-run identification, clean-environment installation, and model reproduction validation remain pending. The code license is MIT, with copyright held by Eisuke Kagawa. See the [publication plan (Japanese)](docs/publication_plan_ja.md) and [security review](docs/security_review.md).
+The original training, evaluation, and human-study sources are retained in their supplied formats, with personal paths and identifying-looking examples generalized. The published [v0.1.1 release](https://github.com/ekagawa007/takotsubo_ami_ai_ecg/releases/tag/v0.1.1) adds the historical requirements and training-environment documentation to the initial research-source release.
+
+This revision adds shared inference code, per-model and ensemble CLI examples, and a Google Colab notebook. The paper settings are the defaults and can be changed with arguments. Selected model weights must be supplied locally; they are not included in the Git repository. Fresh WSL/Colab validation and comparison with the original patient-image predictions remain pending. This repository provides research software; no clinical deployment validation is claimed.
 
 ## Contents
 
 | Location | Purpose |
 |---|---|
 | `requirements.txt` | Unmodified 165-package training environment record; snapshot date: 2025-12-11 |
+| `requirements-inference.txt` | Dependencies for the new inference examples |
 | `ek_schedule_exe.py` | Original helper for waiting until a specified local time |
 | `training/pretrain/` | Original SSL code and supplied historical logs |
 | `training/ft_3_class/` | Original three-class fine-tuning code and notebooks |
 | `training/ft_2_class/` | Original two-class fine-tuning code and notebooks |
 | `evaluation/original/` | Original single-image inference, dataset evaluation, and ensemble scripts |
 | `human_test/` | Original study preparation, randomization, and administration scripts |
-| `src/takotsubo_ami_ai_ecg/` | Reserved for shared public inference implementation |
-| `examples/` | Reserved for four CLI examples and a Colab notebook |
-| `configs/` | Reserved for verified inference configuration and weight manifest |
-| `tests/` | Reserved for prediction-parity and loading checks |
-| `weights/` | Local download destination; weights are not committed |
+| `src/takotsubo_ami_ai_ecg/` | Shared public inference implementation |
+| `examples/` | Three per-model CLIs, an ensemble CLI, and a Colab notebook |
+| `configs/` | Paper inference settings |
+| `tests/` | Inference validation checks and guidance |
+| `weights/` | Local model/configuration files; model binaries are not committed |
 | `outputs/` | Local runtime outputs; generated files are not committed |
+
+## Inference quick start
+
+From the repository root, using an environment with a suitable PyTorch/torchvision installation:
+
+```bash
+python -m pip install -r requirements-inference.txt
+python examples/predict_ensemble.py --image data/example_ecg.png --weights-dir weights --output outputs/prediction.json
+```
+
+Supply the selected local weights in the layout described in [weights/README.md](weights/README.md). The default input is a prepared RGB ECG image of **480 x 480 pixels**. Inputs with other dimensions are rejected unless `--input-policy resize` is requested explicitly; that option resizes the full image without cropping or padding.
+
+| Model | TTA views, including the unchanged view | RandAugment magnitude |
+|---|---:|---:|
+| ViT | 24 | 1 |
+| ConvNeXtV2 | 1 (no TTA) | Not applied |
+| MLP-Mixer | 32 | 3 |
+
+Each model averages raw logits across its TTA views. The ensemble then averages the three models' raw logits with equal weights and applies softmax. It does **not** average probabilities. Class order is `0 = tako`, `1 = AMI`; the ensemble selects AMI when `prob_AMI >= 0.5`. Individual-model outputs use the original argmax rule (an exact tie selects tako) unless a threshold is explicitly requested. TTA counts/magnitudes, ensemble weights, seed, device, and other run settings are configurable. See [the inference guide](docs/inference.md) and [examples](examples/README.md).
 
 ## Development provenance
 
-ViT fine-tuning was developed interactively in Jupyter/Google Colab, and its original training implementation is therefore provided in `.ipynb` format. These notebooks are the original training code, not only demonstrations. During the subsequent development of ConvNeXtV2 and MLP-Mixer, the training implementations were organized into `.py` scripts for convenience; their launcher notebooks are also retained because they record run arguments. Original filenames, notebook formats, and learning procedures are preserved; publication edits to paths and examples are recorded separately. The shared public inference package and CLI/Colab examples will be developed separately.
+ViT fine-tuning was developed interactively in Jupyter/Google Colab, and its original training implementation is provided in `.ipynb` format. These notebooks contain the original training code. ConvNeXtV2 and MLP-Mixer retain Python training implementations and the launcher notebooks that record run arguments. Original filenames, notebook formats, and learning procedures are preserved. The new inference implementation is maintained separately from those historical sources.
 
 - [Development code and execution context](docs/development_code.md)
-- [Source-to-destination mapping](docs/source_file_mapping.md)
-- [Full mapping and SHA-256 hashes](docs/source_file_mapping.csv)
-- [Recording the selected model checkpoints](docs/checkpoint_selection.md)
-- [Remaining implementation work](docs/implementation_status.md)
-- [Static security and privacy review](docs/security_review.md)
+- [Selected model checkpoints](docs/checkpoint_selection.md)
+- [Implementation and validation status](docs/implementation_status.md)
 
 ## Checkpoint selection
 
 Training and validation losses were reviewed, and the checkpoint with the lowest validation loss among epochs without apparent signs of overfitting was selected.
 
-The selected checkpoint filename, epoch/global step, originating run, and ordinary versus averaged weight state still need to be linked to the actual evaluation records. See [checkpoint selection details](docs/checkpoint_selection.md).
+The selected final assets are ViT `checkpoint-6900`, ConvNeXtV2 `ckpt_0011.pth` (ordinary `model` state), and MLP-Mixer `ckpt_0011.pth` (ordinary `model` state). ConvNeXtV2 `swa_best.pth` is not the selected inference checkpoint. The public inference files contain the selected tensor state and required loading settings. See [checkpoint selection details](docs/checkpoint_selection.md) for stored epoch/step information and remaining links to evaluation records.
 
 ## Execution environments
 
-Training used Python **3.12.12**, with either **Windows 11 / WSL / Ubuntu 22.04.5 LTS / NVIDIA GeForce RTX 5090** or **Google Colab / NVIDIA A100**. This setup was reported as common across ViT, ConvNeXtV2, and MLP-Mixer training and their training stages. Native Windows Python is not the model runtime.
+Training used Python **3.12.12**, with either **Windows 11 / WSL / Ubuntu 22.04.5 LTS / NVIDIA GeForce RTX 5090** or **Google Colab / NVIDIA A100**. This setup was reported as common across model training stages. Native Windows was the storage/editing host; WSL/Linux and Colab are the model-runtime targets.
 
-The root [requirements.txt](requirements.txt) contains the unchanged historical environment snapshot dated **2025-12-11**. It directly records 165 pinned packages, including `torch==2.9.0+cu130`, `torchvision==0.24.0+cu130`, `timm==1.0.22`, and `transformers==4.57.3`. The snapshot date is documented here rather than included in the public filename.
+The root [requirements.txt](requirements.txt) preserves all 165 entries and original bytes of the **2025-12-11** environment snapshot. It includes `torch==2.9.0+cu130`, `torchvision==0.24.0+cu130`, `timm==1.0.22`, and `transformers==4.57.3`. This historical record is separate from the smaller inference dependency list. See [environment details](docs/execution_environment.md) for reconstruction instructions and the distinction between recorded and newly validated environments.
 
-| Workflow | Target environment | Status |
+| Workflow | Target environment | Validation status |
 |---|---|---|
-| Shared inference and four CLI examples | Linux/WSL; the same Python implementation in Colab | To be implemented and validated |
-| Original training and evaluation | Linux/WSL or Colab, with original dependencies and paths configured | Source retained; reproduction pending |
-| Human-study administrator | Interactive Linux/WSL terminal with working graphical display | Source retained; environment validation pending |
-
-For WSL/Linux installation, first install the recorded PyTorch/torchvision CUDA 13.0 builds from the official PyTorch index, then install `requirements.txt` in a dedicated Python 3.12.12 environment. See [environment details and installation steps](docs/execution_environment.md), including separate guidance for Colab. The local NVIDIA driver **617.42** was reported in the terminal check supplied during this documentation update; it is not established as the driver used in December 2025. The original human-study administrator requires terminal keyboard input and graphical windows. Clean installation and model reproduction have not been validated during publication preparation.
-
-## Verify source integrity
-
-Run from the repository root in Linux/WSL using Python 3.10 or later:
-
-```console
-python3 tools/verify_source_mapping.py
-```
-
-This compares the current public-source files with their recorded destination hashes. Unedited files must also match the original hashes; edited files are labeled `verified_publication_edit`. It does not import, execute, or train any research model. An optional `--source-root` argument checks the private original source directory when available, including the recovered helper.
+| New inference CLIs and shared package | Linux/WSL; same implementation in Colab | Original patient-image prediction comparison and fresh target-runtime validation pending |
+| Original training and evaluation | Linux/WSL or Colab | Source retained; complete reproduction pending |
+| Human-study administrator | Interactive Linux/WSL terminal with graphical display | Source retained; environment validation pending |
 
 ## Distribution
 
-The first public release, [v0.1.0](https://github.com/ekagawa007/takotsubo_ami_ai_ecg/releases/tag/v0.1.0), contains the research training, original evaluation, and human-study administration source with documentation and the scheduling helper. Patient ECG data, participant records, credentials, private originals, and local backups are excluded. Convenient inference examples and a new Colab notebook will follow. Code and documentation are available in the [GitHub repository](https://github.com/ekagawa007/takotsubo_ami_ai_ecg). The final three models and required loading configuration will be distributed through GitHub Releases. The paper-specific release will later be archived on Zenodo for a version-specific DOI.
+Patient ECG data, participant records, credentials, private originals, and local backups are excluded. No public patient-image sample is required to use the examples: users provide their own permitted images. Existing private ECG images and prediction CSVs are used for reproduction checks without being published.
 
-The historical requirements snapshot and WSL/Linux reconstruction instructions are now provided. They record the supplied package versions; they are not a validated portable lock file. Runnable public quick-start examples, published weight download URLs, and clean-environment/model reproduction validation remain pending.
+Code and documentation are available in the [GitHub repository](https://github.com/ekagawa007/takotsubo_ami_ai_ecg). Model weights are intended for separate Release assets after validation and confirmation of their distribution terms. A download URL is not claimed until an asset is published. The paper-specific release can later be archived on Zenodo for a version-specific DOI.
 
 ## License and citation
 
-The code is licensed under the [MIT License](LICENSE). Copyright (c) 2026 Eisuke Kagawa. Third-party components retain their respective licenses and notices. Model weights are not included in this code release; their license will be documented separately after reviewing the actual assets and upstream terms. The complete paper author list and paper metadata remain to be confirmed. See the [publication and licensing plan](docs/publication_plan_ja.md). Documentation version `0.1.6` identifies this README revision. The published initial release is `v0.1.0`, at commit `d6965d35986729e4ccbd402db15730321e42b271`; it remains the original source snapshot. The requirements and environment additions belong to a subsequent revision and are not part of that tag.
+The code is licensed under the [MIT License](LICENSE). Copyright (c) 2026 Eisuke Kagawa. External libraries retain their respective licenses. Model weights are not included in this code release; their license will be documented separately. The complete paper author list and final paper metadata remain to be confirmed. See the [publication and licensing plan](docs/publication_plan_ja.md).
+
+Documentation version `0.1.7` identifies this README revision. Published release [v0.1.1](https://github.com/ekagawa007/takotsubo_ami_ai_ecg/releases/tag/v0.1.1), commit `70ae84ce96bf939ef117b6d2924318aef8716b81`, identifies the requirements-containing source release. It does not include this later inference revision. Existing release tags are retained.
 
 ## Revision history
 
-Documentation versions track README revisions during repository preparation. For each future revision, update the version and date above and add an entry below, with the newest entry first.
+Documentation versions track README revisions. Update the version/date above and add the newest entry first.
 
 | Date (JST) | Documentation version | Changes |
 |---|---|---|
+| 2026-10-22 | 0.1.7 | Removed internal source-mapping, publication-edit, and security-review records and their verifier from the public tree. Added shared inference, per-model/ensemble CLI and Colab examples with configurable paper defaults; documented the selected ordinary ConvNeXtV2 checkpoint, inference-only weight export, and remaining prediction/runtime validation. Recorded the published requirements-containing v0.1.1 release. |
 | 2026-10-21 | 0.1.6 | Consolidated the dependency record into a single root requirements.txt with an undated filename. Preserved all 165 package pins and original file bytes; retained the snapshot date (2025-12-11) in documentation and updated links. Research code and installation order are unchanged. |
 | 2026-10-21 | 0.1.5 | Added the unchanged 2025-12-11 requirements snapshot (165 pinned packages), root requirements entry point, and Python 3.12.12 / WSL Ubuntu 22.04.5 / RTX 5090 or Colab A100 training environment. Added WSL installation guidance, distinguished the currently reported driver from the historical environment, and recorded the published v0.1.0 release. Research sources and checkpoint-selection wording are unchanged; clean installation and model reproduction remain unvalidated. |
 | 2026-10-21 | 0.1.4 | Removed personal Colab authorship, Drive-file and executor metadata from two notebooks after a renewed 71-file security review; updated public hashes and review records. Notebook cell sources, model settings and Python scripts are unchanged. |

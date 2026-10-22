@@ -1,0 +1,12 @@
+# Install a compatible PyTorch / torchvision pair for your hardware first.
+# Reference pair: torch==2.9.0 and torchvision==0.24.0.
+# CPU example: python -m pip install torch==2.9.0 torchvision==0.24.0 --index-url https://download.pytorch.org/whl/cpu
+# Original WSL CUDA 13.0 pair: use https://download.pytorch.org/whl/cu130 instead.
+# Colab: keep its working GPU pair and record the actual versions.
+# This file intentionally does not replace an already-installed GPU pair.
+numpy==2.2.6
+pillow==12.0.0
+safetensors==0.7.0
+timm==1.0.22
+transformers==4.57.3
+

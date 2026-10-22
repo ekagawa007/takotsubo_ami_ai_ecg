@@ -1,6 +1,6 @@
 # Execution environments
 
-Updated 2026-10-21 (JST); documentation revision 0.1.6.
+Updated 2026-10-22 (JST); documentation revision 0.1.7.
 
 ## Recorded training environment
 
@@ -44,7 +44,7 @@ The repository can be stored or edited on native Windows 11. Model execution tar
 | Original dataset/CSV evaluation | Configure data and output locations | Configure data and output locations |
 | Original human-study administrator | Interactive terminal and a working graphical display required | Not a standard notebook workflow; a separate interactive UI would be needed |
 
-The table describes runtime targets for the retained code and planned convenience features. The reported historical training setup is recorded above. Final weights and baseline predictions are not included, and clean-environment reproduction has not been performed during publication preparation.
+The table describes runtime targets for the retained code and new inference examples. The reported historical training setup is recorded above. Final weights and baseline predictions are not included, and clean-environment reproduction has not been performed during publication preparation.
 
 ## Paths
 
@@ -120,12 +120,12 @@ An installation/import check does not establish model reproduction. Configure da
 
 The reported Colab training setup used Python 3.12.12 and an NVIDIA A100. Colab provides a managed runtime whose current Python, GPU, driver, and preinstalled package versions must be checked for each reproduction attempt. The local Ubuntu version and local driver above do not describe the Colab runtime.
 
-Use the historical requirements as the version reference. The complete 165-package snapshot includes notebook-server and NVIDIA support packages; it has not been validated as an in-place replacement for Colab's managed environment. No one-command Colab installation is claimed here. A fresh Colab validation and a dedicated setup notebook remain planned.
+Use the historical requirements as the version reference. The complete 165-package snapshot includes notebook-server and NVIDIA support packages; it has not been validated as an in-place replacement for Colab's managed environment. No one-command Colab installation is claimed here. The new `examples/colab_inference.ipynb` installs inference dependencies separately and uses the same shared inference code as the CLI. Fresh Colab execution validation remains pending; see [the inference guide](inference.md).
 
 ### Other workflows
 
 - Human-study administration requires an interactive Linux/WSL terminal and a working graphical display. Terminal/display validation remains pending.
-- A lightweight CPU inference environment will be documented with the planned public inference examples; the supplied CUDA snapshot does not describe that future environment.
+- CPU and GPU inference setup is documented in [the inference guide](inference.md). The smaller `requirements-inference.txt` is separate from the historical CUDA training snapshot.
 
 ### Installation references
 
@@ -135,14 +135,4 @@ Use the historical requirements as the version reference. The complete 165-packa
 
 ## Current verification
 
-Current public-source hashes and documented path edits are checked without executing training or inference. The supplied scheduling helper is inspected separately; its wait function is not invoked during preparation. A WSL availability query from the current assistant environment returned `Wsl/E_ACCESSDENIED`; no WSL runtime test was completed. This is an access limitation of this session and does not establish that the user's WSL installation is faulty. No Colab model execution has been performed.
-
-## Source integrity check
-
-From the repository root in Linux/WSL:
-
-```bash
-python3 tools/verify_source_mapping.py
-```
-
-The verifier only reads files and compares hashes. It is independent of model libraries and does not validate prediction performance.
+The historical environment is documented from the supplied record. The new inference package and examples have their own dependency list and validation process. A successful package import or model load is not evidence of complete scientific reproduction. Fresh WSL/Linux and Colab validation, and comparison against original patient-image predictions, remain required. See [implementation status](implementation_status.md).

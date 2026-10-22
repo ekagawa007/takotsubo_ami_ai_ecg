@@ -1,0 +1,13 @@
+{
+  "description": "Author-confirmed TTA and ensemble defaults; other execution defaults follow the archived evaluation code and require paired validation.",
+  "model": "ensemble",
+  "class_order": ["tako", "AMI"],
+  "vit": {"tta": 24, "magnitude": 1, "checkpoint": "weights/vit/model.safetensors"},
+  "convnextv2": {"tta": 1, "magnitude": 5, "checkpoint": "weights/convnextv2/model.safetensors", "selected_state": "model from ckpt_0011.pth; not SWA"},
+  "mlpmixer": {"tta": 32, "magnitude": 3, "checkpoint": "weights/mlpmixer/model.safetensors"},
+  "ensemble": {"method": "weighted_mean_raw_logits_then_softmax", "weights": [1.0, 1.0, 1.0], "AMI_threshold": 0.5},
+  "input": {"policy": "strict480", "size": [480, 480], "RGB": true, "mean": [0.485, 0.456, 0.406], "std": [0.229, 0.224, 0.225]},
+  "augmentation": {"identity_included": true, "num_ops": 2, "num_magnitude_bins": 10, "interpolation": "bilinear", "fill": 0, "first_augmented_pass_seed": 1234},
+  "execution": {"device": "auto", "precision": "float32", "batch_size": 1, "num_workers": 4},
+  "validation": "Historical prediction parity has not yet been verified. Input order, worker count, batch size, precision and versions must be matched for parity checks."
+}

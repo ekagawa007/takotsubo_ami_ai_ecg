@@ -1,6 +1,6 @@
 # Documenting the selected model checkpoints
 
-Updated 2026-10-21; documentation revision 0.1.3.
+Updated 2026-10-22 (JST); documentation revision 0.1.7.
 
 ## What identifies the paper model
 
@@ -8,7 +8,7 @@ Record the checkpoint actually used for the reported evaluation for each model. 
 
 > Training and validation losses were reviewed, and the checkpoint with the lowest validation loss among epochs without apparent signs of overfitting was selected.
 
-The training and validation loss histories were used to assess apparent overfitting, with validation loss guiding the choice of epoch. Exact checkpoint identities, epochs/steps, loss values, and the detailed validation split still need to be linked to the actual experiment records.
+The training and validation loss histories were used to assess apparent overfitting, with validation loss guiding the choice of epoch. The final checkpoint files and stored epoch/step values are recorded below. Selected loss values, the detailed validation split, originating run/initialization chain, and correspondence to the final prediction tables still need to be linked to the actual experiment records.
 
 A filename identifies an asset but does not explain how it was selected. The public record should contain:
 
@@ -40,6 +40,18 @@ The training implementations also have SWA-related behavior. Record whether the 
 
 The retained ConvNeXtV2 and MLP-Mixer dataset evaluators choose the lexicographically last `.pth` file when given a directory. For the final evaluation record, specify the exact checkpoint file rather than relying on directory auto-selection. For a ViT checkpoint directory, identify the weight and configuration files used together. Keep the checkpoint identity and evaluation command linked.
 
+## Selected final inference states
+
+| Model | Selected source | Stored epoch / step | State used for inference |
+|---|---|---|---|
+| ViT | `checkpoint-6900/model.safetensors` with model configuration | Trainer state: global step 6900, epoch 12 | Saved model tensor state |
+| ConvNeXtV2 | `ckpt_0011.pth` | Stored epoch value 11 | Ordinary `model` state |
+| MLP-Mixer | `ckpt_0011.pth` | Stored epoch value 11 | Ordinary `model` state |
+
+Epoch values above are reported as stored; do not reinterpret a checkpoint suffix as a one-based completed-epoch count without checking its training loop. The ConvNeXtV2 ordinary checkpoint was confirmed for inference on 2026-10-22. Its `swa_model` and separate `swa_best.pth` are not used for the paper-default public inference path.
+
+Public inference assets use the selected tensor states exported to safetensors, with only required loading configuration. The original training checkpoints remain private. See [the inference guide](inference.md) for the selected TTA and ensemble settings.
+
 ## Current status
 
-The author-confirmed selection criterion and the use of training/validation losses are recorded above. Final checkpoint identities, selected epochs/steps, metric values, split details, and ordinary/SWA state selection remain to be verified against actual weight files and evaluation records. No test-independence claim is inferred from this statement or from an automatic saving branch. No model training or inference was run for this documentation update.
+The selection criterion, selected final files, stored epoch/step values, and intended ordinary weight states are documented. The validation loss values, split details, originating run/initialization chain, final prediction-table correspondence, and patient-image prediction parity remain to be verified against the complete experiment records. No test-independence claim is inferred from this statement or from an automatic saving branch.

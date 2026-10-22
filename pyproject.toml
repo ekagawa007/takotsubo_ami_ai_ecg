@@ -1,0 +1,18 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "takotsubo-ami-ai-ecg"
+version = "0.2.0.dev0"
+description = "Research inference for ECG image classification of takotsubo and anterior STEMI"
+requires-python = ">=3.10"
+license = "MIT"
+authors = [{name = "Eisuke Kagawa"}]
+
+[project.scripts]
+takotsubo-ecg-predict = "takotsubo_ami_ai_ecg.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
