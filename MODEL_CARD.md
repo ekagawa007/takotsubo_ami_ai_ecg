@@ -1,6 +1,6 @@
 # Model card: takotsubo versus AMI ECG-image models
 
-Updated 2026-10-22 (JST). Package/release `v0.2.0`.
+Updated 2026-10-23 (JST). Inference package `v0.2.1`; weight assets `v0.2.0`.
 
 ## Task and intended use
 
@@ -10,7 +10,7 @@ The release supports research inference and reproducibility checks. Clinical dep
 
 ## Inputs and outputs
 
-The default input is an already prepared **480 x 480 RGB image**. The loader converts to RGB and applies the original dataset evaluators' ImageNet mean/std normalization. The optional `--input-policy resize` resizes the complete image with bilinear interpolation; it does not establish equivalence to the study's upstream ECG preparation.
+The default input is an already prepared **480 x 480 RGB image**, supplied as a single-frame PNG, JPEG, BMP, TIFF or WebP file. The loader converts to RGB and applies the original dataset evaluators' ImageNet mean/std normalization. The optional `--input-policy resize` resizes the complete image with bilinear interpolation; it does not establish equivalence to the study's upstream ECG preparation.
 
 Outputs include two-class raw logits, probabilities, predicted classes, effective settings, checkpoint identities and hashes. The ensemble selects AMI when `prob_AMI >= 0.5`. Individual models use argmax, with an exact tie selecting tako, unless an explicit threshold is supplied. See [the inference guide](docs/inference.md).
 
@@ -48,15 +48,17 @@ The code is MIT licensed. Confirmed model-weight terms are separate: the ViT ass
 
 ## Validation scope
 
-| Revision | Check and result | Scope limit |
+| Check | Result | Scope limit |
 |---|---|---|
-| Preceding inference commit `ff1b9bef9596a33cacf9dd67d42cd78d390a6211` | Original evaluators and CLI agreed on 10 real images in WSL/CUDA, float32, no TTA, within `atol=1e-5`, `rtol=1e-5`, with zero class differences | A paired implementation check on those images, not a study performance estimate |
-| `0.2.0.dev1`, Pillow 13.0.0 | Updated CLI matched frozen original-evaluator CSVs on the same 10 real images; its new-CLI CSV was byte-identical to the preceding new-CLI CSV | Original evaluators were not rerun; the comparison used no TTA |
-| `0.2.0.dev2` | 38 tests and seven simulated notebook cases passed; selected-model CPU inference on one synthetic image completed with paper TTA, live progress and prediction values exactly matching the prior CPU baseline | Synthetic-image CPU and simulated notebook checks |
-| Colab execution | The preceding commit completed paper-TTA inference on one synthetic image on A100; the later English notebook with progress was reported to run successfully | The later saved runtime record was not reviewed for this update |
-| `v0.2.0` distribution | 50 tests and five simulated notebook download cases passed; release ZIP installed into a fresh directory with all 11 file hashes verified; installed selected models completed synthetic-image paper-TTA CPU inference with predictions exactly matching the baseline | Live public URL download and actual Colab-download execution remain to be verified |
+| v0.2.1 WSL/RTX 5090, Python 3.12.12, torch 2.13.0+cu130/torchvision 0.28.0+cu130 | Ten real ECG images matched frozen original-evaluator predictions at float32/no TTA; all models and the ensemble were within `atol=rtol=1e-5`, with zero class differences | The original evaluators were not rerun in the new environment; this is not a study performance estimate |
+| v0.2.1 Colab/A100, Python 3.13.15, same GPU library pair | One generated RGB image completed inference with the paper TTA settings and float32; source, weights, input identity, saved records and ensemble calculation were checked | Execution check using a reviewed pre-release source archive; final public Git-tag checkout is checked separately after publication |
+| v0.2.1 tests | WSL: 83 passed, two Windows-only cases skipped. Native Windows CPU: 83 passed, two hardlink-permission cases skipped | 85 cases discovered in each environment; skips are platform-specific |
+| CPU dependency comparisons | Ten-image no-TTA and one synthetic-image paper-TTA comparisons passed tolerance, with zero class changes | Native Windows CPU, float32, batch 1, zero workers |
+| v0.2.0 distribution | Public archive and all 11 bundled hashes verified on 2026-10-22; selected weights unchanged in v0.2.1 | Distribution integrity does not establish clinical validity |
 
-Historical paper-TTA numerical equivalence, a complete training rerun, all-dataset evaluation reproduction and human-study runtime validation remain incomplete. No diagnostic performance metric is inferred from these execution checks. The latest detailed record is [implementation status](docs/implementation_status.md).
+Current checks use Transformers 5.10.4, timm 1.0.22, numpy 2.2.6, Pillow 13.0.0 and safetensors 0.7.0. The ViT checkpoint-name adapter preserves tensor values and strict key/shape validation. Historical checkpoint identities remain the same.
+
+Historical paper-TTA numerical equivalence, a complete training rerun, all-dataset evaluation reproduction and human-study runtime validation remain incomplete. No diagnostic performance metric is inferred from these execution checks. The latest detailed record and earlier version history are in [implementation status](docs/implementation_status.md).
 
 ## Data and citation
 

@@ -1,10 +1,10 @@
 [build-system]
-requires = ["setuptools>=77"]
+requires = ["setuptools>=84.2.1"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "takotsubo-ami-ai-ecg"
-version = "0.2.0"
+version = "0.2.1"
 description = "Research inference for ECG image classification of takotsubo and anterior STEMI"
 requires-python = ">=3.11"
 license = "MIT"

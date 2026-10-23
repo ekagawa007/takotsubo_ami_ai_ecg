@@ -1,6 +1,6 @@
 # Documenting the selected model checkpoints
 
-Updated 2026-10-22 (JST); documentation revision 0.1.9.
+Updated 2026-10-23 (JST); documentation revision 0.1.14.
 
 ## What identifies the paper model
 
@@ -54,4 +54,4 @@ Public inference assets use the selected tensor states exported to safetensors, 
 
 ## Current status
 
-The selection criterion, selected final files, stored epoch/step values, and intended ordinary weight states are documented. At commit `ff1b9bef9596a33cacf9dd67d42cd78d390a6211`, a paired comparison on 10 private real ECG images confirmed numerical agreement within the stated tolerance between the original evaluators and new CLI with identical weights, float32 and no TTA. See [validation scope](implementation_status.md). The updated package `0.2.0.dev1` with Pillow 13.0.0 also passed the WSL/CUDA float32 no-TTA check on those 10 images against the frozen original-evaluator CSVs; image and selected-weight hashes matched, and the original evaluators were not rerun. Numerical parity with historical paper-TTA predictions, updated Colab and WSL paper-TTA execution remain pending. The validation loss values, split details, originating run/initialization chain and complete final prediction-table correspondence still need to be linked to the experiment records. No test-independence claim is inferred from this statement or from an automatic saving branch.
+The selection criterion, selected final files, stored epoch/step values, and intended ordinary weight states are documented. At commit `ff1b9bef9596a33cacf9dd67d42cd78d390a6211`, a paired comparison on 10 private real ECG images confirmed numerical agreement within the stated tolerance between the original evaluators and new CLI with identical weights, float32 and no TTA. See [validation scope](implementation_status.md). The updated package `0.2.0.dev1` with Pillow 13.0.0 also passed the WSL/CUDA float32 no-TTA check on those 10 images against the frozen original-evaluator CSVs; image and selected-weight hashes matched, and the original evaluators were not rerun. The v0.2.1 dependency update also passed the ten-image WSL no-TTA check and a Colab/A100 synthetic-image paper-TTA execution check. Numerical parity with historical paper-TTA predictions and WSL paper-TTA execution remain pending. The validation loss values, split details, originating run/initialization chain and complete final prediction-table correspondence still need to be linked to the experiment records. No test-independence claim is inferred from this statement or from an automatic saving branch.

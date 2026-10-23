@@ -1,6 +1,46 @@
 # Implementation and validation status
 
-Updated 2026-10-22 (JST); documentation revision 0.1.12.
+Updated 2026-10-23 (JST); documentation revision 0.1.14. Package 0.2.1; weights 0.2.0.
+
+## Current implementation
+
+The v0.2.1 inference implementation protects JSON/CSV/metadata saving, retains uncertain partial weight installations, and permits only supported single-frame raster image decoding in the initial check and workers. The current requirements pin the tested inference versions separately from the unchanged historical training requirements.
+
+A strict compatibility adapter supports the selected ViT checkpoint with Transformers 5.10.4. It follows the documented legacy-to-modular names: 192 of 200 saved parameter keys are renamed, without changing their tensor objects or values. Missing, extra, ambiguous or shape-mismatched keys remain errors. The adapter also leaves already matching checkpoint keys unchanged. No model is retrained or re-exported for this change.
+
+The English Colab notebook uses a separate inference virtual environment, configurable synthetic/file input, optional Drive mounting, live progress, unique output names and one ZIP containing the matching prediction/run records. Selected model weights, class order, normalization, paper TTA settings and raw-logit aggregation remain unchanged.
+
+## Completed checks for the tested v0.2.1 implementation
+
+| Check | Environment and input | Result |
+|---|---|---|
+| Full test suite | WSL, Python 3.12.12, torch 2.13.0+cu130, torchvision 0.28.0+cu130 | 85 discovered: 83 passed; two Windows-only alternate-stream/directory-sharing tests skipped |
+| Full test suite | Native Windows CPU, Python 3.13.15, torch 2.13.0+cpu, torchvision 0.28.0+cpu | 85 discovered: 83 passed; two hardlink tests skipped because the account could not create hardlinks |
+| Ten-image no-TTA comparison | Same archived private ECGs and selected weights; WSL/RTX 5090, CUDA, float32, batch 1, four workers, seed 1234, TF32 disabled | All three models and the ensemble agreed with frozen original-evaluator predictions within `atol=rtol=1e-5`; zero class differences in each 10-image comparison |
+| Colab execution | A100-SXM4-40GB, Python 3.13.15, CUDA, float32; one generated 480 x 480 RGB image; paper TTA 24/magnitude 1, 1, and 32/magnitude 3 | Weight preparation, inference, live progress, prediction saving and matching run record completed; record/source/weight identities and raw-logit aggregation verified |
+| CPU dependency comparison | Native Windows, Python 3.13.15, float32, batch 1, zero workers; ten private images without TTA and one generated image with paper TTA | Both comparisons passed `atol=rtol=1e-5`; zero class differences |
+
+All current checks use timm 1.0.22, transformers 5.10.4, numpy 2.2.6, Pillow 13.0.0 and safetensors 0.7.0. The tested setup used pip 26.2.2 and setuptools 84.2.1. The WSL and Colab records contain the same 57 installed package names/versions. The version-level PyPI metadata check found no active indexed advisories, yanked files or lookup errors for that set on 2026-10-23. This limited metadata check is not an OS/driver audit or proof that all vulnerabilities are absent.
+
+The WSL comparison's maximum absolute logit difference was `7.034942627e-7`; its maximum probability difference was `1.352990612e-7`. The independent review recomputed the comparison and the equal raw-logit mean followed by softmax. Input, source and selected-weight hashes matched the recorded artifacts. The comparison reused frozen original-evaluator outputs; it did not rerun those evaluators with the new libraries.
+
+The Colab record identifies the generated input, and its RGB pixel hash matched independent regeneration. The reviewed prediction JSON matched its run-record hash. This is one-image execution evidence and carries no diagnostic-performance claim.
+
+The earlier source-only saving/image-format patch also passed same-runtime CPU comparisons with exactly unchanged predictions. The later dependency change is assessed by the separate tolerance-based CPU and WSL comparisons above; exact cross-version equality is not claimed.
+
+## Publication and remaining scope
+
+The final public notebook passed format/syntax validation and 12 local checks covering source checkout handling, isolated setup/reuse/failure, input selection, progress/error handling and paired-record ZIP saving. These include mocked subprocess/network operations and local Pillow input handling; they are separate from the completed A100 inference run.
+
+The tested pre-release Colab workflow loaded a verified source archive. The final public notebook changes source acquisition to the versioned GitHub checkout and records the resolved commit. That checkout cannot be verified against a published `v0.2.1` tag before publication; its live public-workflow check remains separate. The selected inference implementation and dependency configuration are the ones checked above.
+
+The v0.2.0 public weight archive and all 11 bundled file hashes were verified on 2026-10-22. The v0.2.1 code continues to use those unchanged assets, so a new weight archive is not required.
+
+Historical paper-TTA numerical equivalence, all-dataset evaluation reproduction, a complete training rerun and human-study runtime validation remain incomplete. The results above are implementation and execution checks on their stated inputs, not clinical validation. Original private ECGs and prediction tables are not published.
+
+# Earlier implementation and validation records
+
+Recorded 2026-10-22 (JST); documentation revision 0.1.12. The dated records below preserve their original evidence and then-pending items. Current results and remaining scope are reported above.
 
 ## Public source and inference implementation
 

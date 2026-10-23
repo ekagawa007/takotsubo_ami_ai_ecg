@@ -241,14 +241,14 @@ def _extract_verified(archive, staging, descriptor, quiet):
 
 def _install_verified(staging, output, descriptor):
     present = _existing_assets(output, descriptor)
-    created_files, created_dirs = [], []
+    created_files = []
     try:
         for name in descriptor["files"]:
             if name in present:
                 continue
             relative = _member_path(name)
             target = output / relative
-            _ensure_directory(target.parent, created_dirs)
+            _ensure_directory(target.parent)
             if _check_link(target) is not None:
                 raise DownloadError("The output changed during installation. No existing files were overwritten.")
             with target.open("xb") as destination:
@@ -257,18 +257,18 @@ def _install_verified(staging, output, descriptor):
                     shutil.copyfileobj(source, destination, length=_CHUNK)
         if len(_existing_assets(output, descriptor)) != len(descriptor["files"]):
             raise DownloadError("The installed files could not be verified.")
-    except BaseException:
-        # Roll back only the files/directories created by this invocation.
-        for path in reversed(created_files):
-            try:
-                path.unlink()
-            except OSError:
-                pass
-        for path in reversed(created_dirs):
-            try:
-                path.rmdir()
-            except OSError:
-                pass
+    except (OSError, DownloadError) as error:
+        # Destination paths may have been replaced by another local process.
+        # Never follow those paths again to delete files during rollback. A
+        # partial installation is preferable to deleting an unrelated file.
+        # Matching complete members are reusable on retry; a partial member
+        # causes the normal integrity check to require a fresh output folder.
+        if created_files:
+            raise DownloadError(
+                "Weight installation did not complete. Partial files were retained; "
+                "no automatic destination cleanup was attempted. Use a new private "
+                "output directory, or inspect the incomplete installation before retrying."
+            ) from None
         raise
 
 
@@ -325,7 +325,7 @@ def main(argv=None):
     except OSError:
         parser.exit(2, "Error: Cannot access the archive or destination. Check permissions and available disk space.\n")
     except KeyboardInterrupt:
-        parser.exit(130, "Weight download interrupted.\n")
+        parser.exit(130, "Weight download interrupted. Partial destination files may remain; use a new private output directory if verification fails on retry.\n")
     if not args.quiet:
         print("Official v0.2.0 weights are ready.")
     return 0

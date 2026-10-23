@@ -2,12 +2,14 @@
 
 import argparse
 import csv
+import io
 import json
 from pathlib import Path
 import sys
 
 from .settings import MODEL_NAMES, InferenceSettings, ModelSettings
 from .progress import ProgressReporter
+from .safe_output import absolute_path, validate_outputs, write_files
 
 IMAGE_SUFFIXES = {".png", ".jpg", ".jpeg", ".bmp", ".tif", ".tiff", ".webp"}
 
@@ -97,21 +99,17 @@ def output_paths(path):
     return [path, path.with_suffix(".metadata.json")] if path.suffix.lower() == ".csv" else [path]
 
 
-def write_result(result, output, overwrite=False):
+def write_result(result, output, overwrite=False, *, protected_paths=()):
     destinations = output_paths(output)
-    for path in destinations:
-        if path.exists() and not overwrite:
-            raise ValueError("Prediction output already exists; choose a new name or use --overwrite.")
-        path.parent.mkdir(parents=True, exist_ok=True)
     primary = destinations[0]
     if primary.suffix.lower() == ".json":
-        primary.write_text(json.dumps(result, ensure_ascii=False, indent=2, allow_nan=False) + "\n", encoding="utf-8")
+        contents = [(primary, (json.dumps(result, ensure_ascii=False, indent=2, allow_nan=False) + "\n").encode("utf-8"))]
     else:
         models = list(result["predictions"][0]["models"])
         fields = ["sample_id", "input_sha256", "pred_id", "pred_label", "logit_tako", "logit_AMI", "prob_tako", "prob_AMI"]
         for name in models:
             fields += [f"{name}_{field}" for field in ("logit_tako", "logit_AMI", "prob_tako", "prob_AMI")]
-        with primary.open("w", encoding="utf-8", newline="") as stream:
+        with io.StringIO(newline="") as stream:
             writer = csv.DictWriter(stream, fieldnames=fields)
             writer.writeheader()
             for row in result["predictions"]:
@@ -121,7 +119,10 @@ def write_result(result, output, overwrite=False):
                     model_values = row["models"][name]
                     values.update(dict(zip([f"{name}_{key}" for key in ("logit_tako", "logit_AMI", "prob_tako", "prob_AMI")], model_values["logits"] + model_values["probabilities"])))
                 writer.writerow(values)
-        destinations[1].write_text(json.dumps(result["metadata"], indent=2, allow_nan=False) + "\n", encoding="utf-8")
+            csv_bytes = stream.getvalue().encode("utf-8")
+        metadata_bytes = (json.dumps(result["metadata"], indent=2, allow_nan=False) + "\n").encode("utf-8")
+        contents = [(primary, csv_bytes), (destinations[1], metadata_bytes)]
+    write_files(contents, overwrite, protected_paths)
 
 
 def main(argv=None, fixed_model=None):
@@ -132,7 +133,7 @@ def main(argv=None, fixed_model=None):
         reporter.stage("Preparing inputs and output.")
         settings = settings_from_args(args)
         images = collect_images(args)
-        destinations = output_paths(Path(args.output).expanduser().resolve())
+        destinations = output_paths(absolute_path(args.output))
         protected = set(images)
         if args.input_csv:
             protected.add(Path(args.input_csv).expanduser().resolve())
@@ -148,15 +149,12 @@ def main(argv=None, fixed_model=None):
             protected.add(weight_path)
             protected.add((weight_path.parent / "config.json").resolve())
             protected.add((weight_path.parent / "preprocessor_config.json").resolve())
-        if any(path in protected for path in destinations):
-            raise ValueError("Prediction output must not overwrite an input image, input CSV or model file.")
-        if any(path.exists() for path in destinations) and not args.overwrite:
-            raise ValueError("Prediction output already exists; choose a new name or use --overwrite.")
+        validate_outputs(destinations, args.overwrite, protected)
         from .inference import predict
         result = predict(images, args.weights_dir, args.model, settings, overrides,
                          progress_callback=reporter if args.progress != "off" else None)
         reporter.stage("Saving predictions.")
-        write_result(result, destinations[0], args.overwrite)
+        write_result(result, destinations[0], args.overwrite, protected_paths=protected)
         reporter.complete("Predictions saved.")
     except ImportError:
         reporter.error()

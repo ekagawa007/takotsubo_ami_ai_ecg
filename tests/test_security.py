@@ -5,6 +5,7 @@ kernel dispatch. They do not download code or open an exploit image/checkpoint.
 """
 
 import copy
+from contextlib import ExitStack
 import importlib.util
 import json
 from pathlib import Path
@@ -157,11 +158,29 @@ class VitConfigurationTests(unittest.TestCase):
 
         small = dict(VALID_CONFIG, hidden_size=32, intermediate_size=64,
                      num_attention_heads=4, num_hidden_layers=1, pooler_output_size=32)
-        with patch("transformers.modeling_utils.load_and_register_kernel",
-                   side_effect=AssertionError("External kernel dispatch is forbidden")) as dispatch:
+        from transformers import modeling_utils
+
+        # Intercept the actual dispatch boundary for the installed library.
+        # Do not create missing attributes: an unrecognized API should fail.
+        if hasattr(modeling_utils, "load_and_register_kernel"):
+            targets = ["transformers.modeling_utils.load_and_register_kernel"]
+        else:
+            targets = [
+                "transformers.modeling_utils.lazy_import_flash_attention",
+                "transformers.modeling_utils.lazy_import_paged_flash_attention",
+                "transformers.integrations.hub_kernels.get_kernel",
+            ]
+        with ExitStack() as stack:
+            dispatchers = [
+                stack.enter_context(patch(
+                    target, side_effect=AssertionError("External kernel dispatch is forbidden")
+                ))
+                for target in targets
+            ]
             direct = ViTForImageClassification(ViTConfig.from_dict(copy.deepcopy(small)))
             guarded = ViTForImageClassification(ViTConfig.from_dict(security.validate_vit_config(small)))
-        dispatch.assert_not_called()
+        for dispatch in dispatchers:
+            dispatch.assert_not_called()
         self.assertEqual(direct.config._attn_implementation, guarded.config._attn_implementation)
 
 

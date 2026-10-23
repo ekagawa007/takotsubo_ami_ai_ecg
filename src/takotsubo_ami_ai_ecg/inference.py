@@ -17,6 +17,7 @@ import platform
 import random
 
 from . import __version__
+from .image_input import ImageInputError, open_supported_image
 from .security import require_patched_pillow, validate_vit_config
 from .settings import IMAGE_SIZE, LABELS, MEAN, MODEL_NAMES, STD, InferenceSettings
 
@@ -111,12 +112,13 @@ class ImageDataset:
 
     def __getitem__(self, index):
         require_patched_pillow()
-        from PIL import Image
 
         try:
-            with Image.open(self.paths[index]) as source:
+            with open_supported_image(self.paths[index], index + 1) as source:
                 return self.transform(source.convert("RGB"))
-        except (OSError, ValueError) as error:
+        except ImageInputError:
+            raise
+        except (OSError, SyntaxError, ValueError):
             raise ValueError(f"Cannot prepare input image {index + 1}.") from None
 
 
@@ -167,6 +169,12 @@ def _load_model(name, path, device):
             architecture = "mixer_b16_224"
         metadata["architecture"] = architecture
     state = load_file(str(path), device="cpu")
+    if name == "vit":
+        from .checkpoint_compat import prepare_vit_state_dict
+
+        state, mapping_name = prepare_vit_state_dict(state, model.state_dict())
+        if mapping_name is not None:
+            metadata["checkpoint_key_mapping"] = mapping_name
     try:
         model.load_state_dict(state, strict=True)
     except RuntimeError:
@@ -177,7 +185,6 @@ def _load_model(name, path, device):
 
 def _validate_images(paths, input_policy):
     require_patched_pillow()
-    from PIL import Image
 
     if not paths:
         raise ValueError("At least one input image is required.")
@@ -186,7 +193,7 @@ def _validate_images(paths, input_policy):
         if not path.is_file():
             raise ValueError(f"Input image {index} does not exist.")
         try:
-            with Image.open(path) as source:
+            with open_supported_image(path, index) as source:
                 if input_policy == "strict480" and source.size != (IMAGE_SIZE, IMAGE_SIZE):
                     raise ValueError(
                         f"Input image {index} is {source.width}x{source.height}; the default requires "

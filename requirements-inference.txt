@@ -1,15 +1,15 @@
-# Inference setup requires Python >=3.11 (Pillow 13 security fixes).
-# Install a compatible PyTorch / torchvision pair for your hardware first.
-# Previously validated inference pair: torch==2.9.0 and torchvision==0.24.0.
-# Exporting trusted .pth checkpoints additionally requires stable torch>=2.10.0.
-# CPU-tested pair for this revision:
-# python -m pip install torch==2.11.0 torchvision==0.26.0 --index-url https://download.pytorch.org/whl/cpu
-# CUDA builds use a hardware-compatible PyTorch wheel index; record the actual pair.
-# Colab: keep its working GPU pair and record the actual versions.
-# This file intentionally does not replace an already-installed GPU pair.
+# Inference environment validated on 2026-10-23; Python >=3.11.
+# Historical training packages remain recorded separately in requirements.txt.
+# Install the matching torch/torchvision CUDA or CPU wheels first:
+# python -m pip install torch==2.13.0 torchvision==0.28.0 --index-url https://download.pytorch.org/whl/cu130
+# For CPU-only use, replace cu130 with cpu. Then install this file.
+# Existing +cu130 or +cpu builds of these versions satisfy the pins below.
+# Colab uses an isolated environment; see examples/colab_inference.ipynb.
+torch==2.13.0
+torchvision==0.28.0
 numpy==2.2.6
-pillow==13.0.0
+Pillow==13.0.0
 safetensors==0.7.0
 timm==1.0.22
-transformers==4.57.3
-
+transformers==5.10.4
+setuptools==84.2.1

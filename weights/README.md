@@ -1,6 +1,6 @@
 # Inference weights
 
-Updated 2026-10-22 (JST); documentation revision 0.1.12.
+Updated 2026-10-23 (JST); documentation revision 0.1.14. Weight assets remain v0.2.0.
 
 Version `v0.2.0` uses the separate Release asset `takotsubo_ami_ai_ecg_weights_v0.2.0.zip` and `SHA256SUMS.txt`. Model binaries remain excluded from Git. The three selected safetensors files total 958,657,088 bytes before packaging; the archive is 958,701,120 bytes.
 
@@ -43,4 +43,4 @@ Point `--weights-dir` to the resulting directory. The export includes `manifest.
 
 The new inference package reads safetensors rather than arbitrary pickled checkpoints. ViT configuration fields are checked against an explicit allowlist before constructing a model. Private execution-control fields and unsupported fields are rejected. ViT's image-processor configuration is retained with its model for provenance; the paper evaluator's explicit preprocessing is documented in [the inference guide](../docs/inference.md).
 
-The release archive passed installation into a fresh directory with all 11 expected file hashes verified. The installed models completed paper-TTA CPU inference on one synthetic image with prediction values exactly matching the prior baseline. The separate weight terms are confirmed; live public URL and Colab-download checks have not yet been performed. The archive checksum is recorded in `SHA256SUMS.txt`; the selected file identities are recorded in the asset manifest. See [v0.2.0 release notes](../docs/releases/v0.2.0.md). The code's MIT License does not replace the separate weight terms.
+The release archive passed installation into a fresh directory with all 11 expected file hashes verified. The installed models completed paper-TTA CPU inference on one synthetic image with prediction values exactly matching the prior baseline. The separate weight terms are confirmed. Public URL download and all 11 member hashes were verified on 2026-10-22; the tested v0.2.1 Colab/A100 workflow also completed weight preparation and paper-TTA execution with these unchanged assets. The archive checksum is recorded in `SHA256SUMS.txt`; the selected file identities are recorded in the asset manifest. See [v0.2.0 release notes](../docs/releases/v0.2.0.md). The code's MIT License does not replace the separate weight terms.

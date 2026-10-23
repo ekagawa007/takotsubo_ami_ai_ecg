@@ -1,30 +1,35 @@
 # Running inference
 
-Updated 2026-10-22 (JST); documentation revision 0.1.12.
+Updated 2026-10-23 (JST); documentation revision 0.1.14. Package 0.2.1.
 
 The new CLIs and Colab notebook share one inference implementation. The defaults record the paper's selected models, TTA counts/magnitudes, class order, and raw-logit ensemble. They do not establish that a new runtime reproduces every saved prediction; compare against the original results using the same inputs and execution settings.
 
 ## Setup
 
-New inference requires Python 3.11 or newer and Pillow 13.0.0. Python 3.12.12 matches the reported training Python version. Install a compatible PyTorch/torchvision pair for the runtime first. For a local CPU environment:
+Use a fresh Python 3.11+ environment. The tested WSL runtime uses Python 3.12.12 and an RTX 5090; Colab uses Python 3.13.15 and an A100. Both GPU checks used torch 2.13.0+cu130 and torchvision 0.28.0+cu130. From the repository root in WSL/Linux:
 
 ```bash
-python -m pip install torch==2.11.0 torchvision==0.26.0 --index-url https://download.pytorch.org/whl/cpu
+python -m venv .venv-inference
+source .venv-inference/bin/activate
+python -m pip install pip==26.2.2 setuptools==84.2.1
+python -m pip install torch==2.13.0 torchvision==0.28.0 --index-url https://download.pytorch.org/whl/cu130
 python -m pip install -r requirements-inference.txt
 python -m pip check
 ```
 
-The CPU pair above passed the `0.2.0.dev1` development checks with Python 3.13.15 and Pillow 13.0.0. For WSL/CUDA, package `0.2.0.dev1` passed the scoped 10-image no-TTA check with Python 3.12.12, torch 2.9.0+cu130, torchvision 0.24.0+cu130 and Pillow 13.0.0; use a compatible NVIDIA driver. That check compared against frozen original-evaluator CSVs and did not rerun the original evaluators. WSL paper-TTA execution remains unverified. Historical and newly checked environments are recorded separately in [execution environments](execution_environment.md). In Google Colab, inspect its existing PyTorch/torchvision pair before changing packages; the notebook preserves that pair and installs the inference dependencies separately. Neither an imported package nor a successful installation alone validates predictions. The full historical training snapshot in `requirements.txt` is preserved separately.
+For CPU use, replace only the PyTorch index with `https://download.pytorch.org/whl/cpu`. The CPU pair was checked on native Windows with Python 3.13.15. CUDA requires a compatible NVIDIA driver. Other hardware or library combinations need their own execution checks. Install the intended PyTorch/torchvision build before the inference requirements, which pin the tested base versions. Do not install the historical `requirements.txt` over this environment.
 
-The CLI checks Pillow before opening images and accepts only supported ViT configuration fields. Use the new inference requirements even when preserving an older training environment for provenance. The checkpoint exporter separately requires stable PyTorch 2.10.0 or newer and trusted source checkpoints. These restrictions address published [Pillow image parsing](https://github.com/python-pillow/Pillow/security/advisories/GHSA-5xm2-6676-qcp9), [Transformers configuration loading](https://github.com/advisories/GHSA-29pf-2h5f-8g72), and [PyTorch checkpoint loading](https://github.com/pytorch/pytorch/security/advisories/GHSA-63cw-57p8-fm3p) issues.
+The inference dependencies are torch 2.13.0, torchvision 0.28.0, timm 1.0.22, transformers 5.10.4, numpy 2.2.6, Pillow 13.0.0, safetensors 0.7.0 and setuptools 84.2.1. The list is separate from the preserved training snapshot. Colab creates its own inference virtual environment and invokes that interpreter; it keeps the notebook kernel's ML packages intact.
 
-Version `v0.2.0` includes a separate Release archive containing the selected inference assets. Review [the weight terms](../WEIGHTS_LICENSE.md) and [model card](../MODEL_CARD.md), then run:
+The loader checks Pillow before opening images, accepts only supported ViT configuration fields, and loads selected safetensors assets. The ViT compatibility adapter maps the documented legacy checkpoint names to the Transformers 5 layout, preserving tensors and strict key/shape checking. Exporting trusted original `.pth` checkpoints remains a separate operation requiring stable PyTorch 2.10.0 or newer; existing verified inference assets do not need re-exporting.
+
+Review the [weight terms](../WEIGHTS_LICENSE.md) and [model card](../MODEL_CARD.md), then download the published assets:
 
 ```bash
 python tools/download_weights.py --output-dir weights
 ```
 
-The downloader uses the versioned Release and verifies the expected asset contents. Local validation installed the release archive into a fresh directory, checked all 11 expected file hashes and completed selected-model CPU inference with unchanged prediction values. Live public URL download and actual Colab-download execution remain to be checked. If the Release asset is unavailable, the command reports a download failure; existing local weights remain an option. See [the weight layout and release status](../weights/README.md). ViT requires its model and model configuration; its image-processor configuration is retained with the assets for provenance. ConvNeXtV2 and MLP-Mixer use the selected ordinary tensor states exported as safetensors. Inference requires those selected assets and never substitutes a newly initialized prediction head.
+The downloader uses the v0.2.0 Release, verifies the archive and every bundled file, and reuses matching complete files. Public download and all 11 member checksums were verified on 2026-10-22; the updated Colab workflow also completed weight preparation and inference. ViT requires the selected model and configuration; the image-processor configuration is retained for provenance. ConvNeXtV2 and MLP-Mixer use the selected ordinary tensor states. No newly initialized prediction head is substituted. See [weight layout](../weights/README.md).
 
 ## Basic commands
 
@@ -62,7 +67,7 @@ Progress is written to stderr, separately from saved JSON/CSV predictions. It in
 
 The overall count is the number of images multiplied by the sum of the selected models' TTA views. With the paper ensemble settings, one image requires 57 image evaluations (24 + 1 + 32); 10 images require 570. Percentages reflect completed image evaluations. The display shows elapsed time; model loading, saving and different models' processing speeds mean this percentage does not estimate time remaining.
 
-The Colab notebook starts the CLI with `subprocess.Popen`, reads the JSON progress events as they arrive and updates an HTML progress bar. Other subprocess messages remain visible, and a failed run stops before reading a prediction result. The implementation adds display updates without changing the selected TTA defaults. This revision passed 38 tests, seven simulated notebook cases and a CPU run with the three selected models on one synthetic image using the paper TTA settings. That run produced live progress and prediction values exactly matching the preceding CPU baseline. Colab execution with progress was subsequently reported successful; its saved runtime record was not reviewed for this update. WSL/GPU execution of that progress version remains unverified. The `0.2.0` download implementation separately passed 50 tests, five simulated notebook download cases and a fresh archive-install/CPU inference check; live public Release/Colab download verification remains pending. See [implementation status](implementation_status.md) for the full scope.
+The Colab notebook reads CLI JSON progress events as they arrive and updates an HTML bar. Other subprocess messages remain visible. Failed or cancelled runs stop before result loading, and the subprocess is terminated when notebook streaming fails. The tested Colab/A100 workflow completed paper-TTA inference and saving with this progress path. See [implementation status](implementation_status.md) for the exact validation scope.
 
 ## Paper settings and configurable arguments
 
@@ -111,6 +116,20 @@ Choose `.json` or `.csv` through the output filename. CSV output includes a JSON
 
 ## Google Colab and sample images
 
-Open `examples/colab_inference.ipynb`, select a suitable runtime and supply your own permitted ECG image. The default weight source downloads the `v0.2.0` Release assets when available. A local-weight option remains available for an existing runtime or Drive directory. The full three-model bundle includes the ViT noncommercial condition; review [the weight terms](../WEIGHTS_LICENSE.md) before downloading. If the Release asset is not yet available, select the local option with existing verified assets. If dependency installation changes a loaded package, restart the session and rerun setup from the first code cell. The notebook checks for a required restart before importing inference libraries. Each inference execution selects a new output filename, displays progress and subprocess messages while the process runs, and stops on failure before reading a result. Save the prediction JSON and its matching run record. The notebook invokes the same implementation as the CLI. It does not require a patient image to be published in this repository.
+Open `examples/colab_inference.ipynb` in a fresh GPU runtime. Its default source reference is `GIT_REF = "v0.2.1"`, available after that tag is published. The notebook records the resolved commit and source identity. The pre-release Colab check used a verified archive of the same inference implementation; the final public tag checkout is a separate post-publication check.
 
-A generated image can check input handling and model execution but cannot validate ECG classification performance. Real prediction parity uses non-public images and existing results locally. The preceding commit `ff1b9bef9596a33cacf9dd67d42cd78d390a6211` passed paired no-TTA comparison on 10 private real images in WSL and paper-TTA execution on one synthetic image in Colab. The updated package `0.2.0.dev1` with Pillow 13.0.0 also passed the 10-image WSL/CUDA float32 no-TTA comparison against the frozen original-evaluator CSVs, with unchanged image/weight hashes and zero class changes. The original evaluators were not rerun. The preceding English Colab notebook was subsequently reported to run successfully; its saved runtime record was not reviewed for this update. Historical paper-TTA numerical parity and WSL paper-TTA execution remain pending. These completed checks describe the earlier package; the `0.2.0.dev2` progress and `0.2.0` download revisions are tracked separately in [implementation status](implementation_status.md).
+The notebook creates an inference virtual environment and uses its Python for package checks, image handling, weight downloading and inference. It does not replace the kernel's ML packages, so a kernel restart is normally unnecessary. After a manual restart, rerun from the first code cell. A failed partial environment setup is not marked ready; use a fresh runtime after an installation failure.
+
+The default `INPUT_SOURCE = "synthetic"` generates a 480 x 480 RGB trace for an execution check. For an existing image, select `INPUT_SOURCE = "file"` and edit `USER_IMAGE_PATH`. Set `USE_GOOGLE_DRIVE = True` only if that path or local weights require Drive. `IMAGE_PATH` is derived from the selected input mode; existing files are not overwritten by the generator. The input must pass the same supported-format and dimension checks as CLI input.
+
+The default `WEIGHT_SOURCE = "release"` downloads the v0.2.0 assets outside the checkout. `WEIGHT_SOURCE = "local"` accepts already available inference weights. Each inference execution creates a new timestamped prediction JSON and matching `.colab_run.json`. The final cell downloads both in one ZIP. The run record links the prediction by SHA-256 and records the source, library versions, input identity and actual device. Keep these records privately and clear notebook outputs before sharing.
+
+A generated image checks execution, not ECG classification performance. The ten-image WSL no-TTA comparison and the one-image Colab paper-TTA execution are separate checks; neither establishes historical full-dataset paper-TTA numerical equivalence.
+
+## Input formats and saving in v0.2.1
+
+Use a single-frame PNG, JPEG, BMP, TIFF or WebP image. The loader checks the contents using only these decoders, then converts to RGB. Animated and multipage images are rejected, including files renamed to a supported extension. The default remains 480 x 480 pixels; explicit `resize` changes dimensions without reproducing upstream ECG preparation. See the [README image format table](../README.md#ecg-image-files-for-the-examples).
+
+Prediction outputs are new files by default. `--overwrite` explicitly replaces a prediction output, but cannot authorize writing over an input image, input CSV or model/configuration file, including a hardlink alias. Both a CSV and its `.metadata.json` file are checked. They are separate filesystem updates: if either fails, the command reports an incomplete save, not success. Inspect any partial output and use a new filename before retrying.
+
+Use an output folder that you control. If weight installation fails after copying starts, incomplete destination files are retained rather than removed through paths that may have changed. Choose a new private output folder if a retry detects a conflicting partial file. Matching complete weight files can still be reused. This behavior does not change archive or member SHA-256 checks.
