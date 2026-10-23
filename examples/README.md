@@ -1,6 +1,6 @@
 # Inference examples
 
-Updated 2026-10-23 (JST); documentation revision 0.1.14. Package 0.2.1.
+Updated 2026-10-23 (JST); documentation revision 0.1.16. Package 0.3.0.
 
 The four CLIs and the English Colab notebook share the same implementation:
 
@@ -17,6 +17,7 @@ Use a fresh Python 3.11+ environment. Install the tested torch 2.13.0/torchvisio
 ```bash
 python tools/download_weights.py --output-dir ../ecg_inference_weights
 python examples/predict_ensemble.py --image data/example_ecg.png --weights-dir ../ecg_inference_weights --output outputs/prediction.json
+python examples/predict_ensemble.py --image data/example_ecg.png --weights-dir ../ecg_inference_weights --output outputs/prediction_cam.json --gradcam
 python examples/predict_vit.py --help
 ```
 
@@ -26,7 +27,7 @@ Paper defaults are ViT TTA 24/magnitude 1, ConvNeXtV2 no TTA, MLP-Mixer TTA 32/m
 
 ## Colab setup and inputs
 
-Open `colab_inference.ipynb` in a fresh GPU runtime. The source defaults to `GIT_REF = "v0.2.1"`, which requires that tag to be published. The notebook records the resolved commit and source identity. The pre-release Colab/A100 run used a verified archive of the reviewed implementation; the final GitHub checkout cell remains a separate public-workflow check.
+Open `colab_inference.ipynb` in a fresh GPU runtime. The source defaults to `GIT_REF = "v0.3.0"`, which requires that tag to be published. The notebook records the resolved commit and source identity. Until v0.3.0 is published, use the separately supplied candidate-validation notebook with its verified source ZIP. Candidate Grad-CAM execution has passed on A100; the final public-tag checkout/run remains a separate post-publication check.
 
 Setup creates a separate inference virtual environment at `/content/ecg_inference_venv`. `INFERENCE_PYTHON` is used for library checks, image processing, weight downloading and inference. The kernel's existing ML packages are retained, so normally no kernel restart is required. If the kernel is restarted manually, rerun from the first code cell. An incomplete installation is not reused as a ready environment; start a fresh runtime after an installation failure.
 
@@ -49,7 +50,7 @@ Every inference execution chooses a new timestamped output name and clears any p
 - `prediction_<model>_<run>.json`: predictions, settings and model checksums.
 - `prediction_<model>_<run>.colab_run.json`: source identity, library versions, input identity and the prediction file's SHA-256.
 
-The final cell defaults to `DOWNLOAD_RESULTS = True` and downloads one ZIP containing both JSON files from the same run. Keep them privately; clear notebook outputs before sharing. The public notebook contains no stored execution outputs or patient images.
+The final cell defaults to `DOWNLOAD_RESULTS = True` and downloads one ZIP containing both JSON files and, when enabled, all Grad-CAM artifacts from the same run. The run record includes artifact hashes, and the download cell checks them. The Grad-CAM ZIP includes a prepared input-image copy, so keep it private when the input is private; clear notebook outputs before sharing. The public notebook contains no stored execution outputs or patient images.
 
 ## Input formats and saving
 
@@ -59,4 +60,14 @@ Prediction outputs must be new by default. `--overwrite` can explicitly replace 
 
 The downloader retains incomplete files after an installation failure. A retry reuses matching complete files; conflicting partial files require inspection or a new destination. Archive and member hash checks remain mandatory.
 
-The tested v0.2.1 implementation passed WSL/RTX 5090 float32/no-TTA comparison on ten real ECGs and Colab/A100 paper-TTA execution on one generated image with the new dependency set. See [implementation status](../docs/implementation_status.md) for exact scope, test skips and the remaining public-checkout verification.
+The v0.2.1 prediction baseline passed WSL/RTX 5090 float32/no-TTA comparison on ten real ECGs and final public-tag Colab/A100 paper-TTA execution on generated images. Candidate `0.3.0.dev0` passed 116 of 119 local tests (three hardlink tests skipped), selected-weight CPU checks with and without paper TTA, and paper-TTA GPU execution on WSL/RTX 5090 and Colab/A100. Paired CPU and WSL runs confirmed exactly unchanged predictions with Grad-CAM enabled or disabled; the Colab run verified execution, source identity and saved artifacts without an on/off comparison. Package `0.3.0` changes only documentation and version metadata from that candidate. Historical-map equivalence and final `v0.3.0` public-tag execution remain pending. See [Grad-CAM details](../docs/gradcam.md) and [implementation status](../docs/implementation_status.md).
+
+## Optional Grad-CAM
+
+Add `--gradcam` to a ViT, ConvNeXtV2 or ensemble command. The notebook enables the same option with `ENABLE_GRADCAM = True`. Prediction settings and raw-logit averaging remain unchanged. Grad-CAM runs afterward, with one unaugmented float32 input per selected visualization model. Ensemble inference produces separate ViT and ConvNeXtV2 maps; it does not produce an averaged ensemble map. MLP-Mixer alone requires Grad-CAM to be disabled.
+
+The defaults are `--cam-target model-predicted`, `--cam-normalization inference`, and `--cam-opacity 0.6`. Choose `--cam-target tako` or `--cam-target AMI` for a fixed class, or `--cam-target ensemble-predicted` with ensemble inference. The last option uses the final ensemble decision, including an explicit prediction threshold. Each panel and JSON entry records its actual target.
+
+The normalization default matches the current CLI's ImageNet preprocessing. The archived ViT visualizer instead used mean/std 0.5. `--cam-normalization legacy-vit` exposes that old ViT normalization as a comparison option; it does not change prediction preprocessing or prove reproduction of the reader-study images.
+
+Beside the prediction file, each image receives a prepared RGB input PNG and, for each visualized model, a color heatmap PNG, overlay PNG and float32 `.npy` array. Arrays can be loaded with `numpy.load(path, allow_pickle=False)`. All names derive from the prediction stem and anonymous sample number. The map values are relative within one image/model, not probabilities. See [the method and output specification](../docs/gradcam.md).

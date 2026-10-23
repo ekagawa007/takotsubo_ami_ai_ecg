@@ -1,6 +1,6 @@
 # Inference validation
 
-Updated 2026-10-23 (JST); documentation revision 0.1.14.
+Updated 2026-10-23 (JST); documentation revision 0.1.16.
 
 Install the current inference dependencies, then run from the repository root:
 
@@ -8,13 +8,27 @@ Install the current inference dependencies, then run from the repository root:
 python -m unittest discover -s tests -p "test_*.py" -v
 ```
 
+## Grad-CAM validation for the prepared 0.3.0 release
+
+The prepared `0.3.0` source changes only documentation and version metadata from the tested `0.3.0.dev0` candidate. The checks below retain the version at which they were performed.
+
+On 2026-10-23, the candidate `0.3.0.dev0` suite ran **119 tests: 116 passed, three skipped, zero failures/errors** in native Windows, Python 3.13.15, torch 2.13.0+cpu and the unchanged v0.2.1 dependency set. The three skipped cases require hardlinks unavailable in the selected temporary directory. The Grad-CAM protected-hardlink test also passed separately in a workspace directory where hardlinks were supported; exact environment-specific skips are retained in private records.
+
+New tests cover an analytic ConvNeXtV2 map, archived ViT channel-gradient calculations, HF4/HF5 layer layouts, target modes, normalization, constant maps, hook/state/RNG preservation, input/checkpoint identity, visualization serialization, protected outputs and prediction preservation. They use small generated models/images and do not establish clinical localization validity.
+
+Separate selected-weight CPU checks on one generated 480 x 480 image passed with TTA disabled and with the paper TTA settings (24/1/32): the three-model/ensemble prediction values were exactly unchanged when Grad-CAM was enabled, both maps were finite float32 480 x 480 arrays, and saved PNG/NPY/JSON records were checked. A subsequent paired WSL/RTX 5090 run also passed with exactly unchanged predictions under paper TTA, CUDA float32, batch 1 and zero workers, using Python 3.12.12, torch 2.13.0+cu130, torchvision 0.28.0+cu130 and transformers 5.10.4.
+
+Colab/A100 candidate execution completed under paper TTA with Python 3.13.15, the same core inference pins, CUDA float32, batch 1 and four workers. The matching candidate archive/source hashes, prediction/run records, seven visualization artifacts and nine-member ZIP were verified. This Colab run did not include a paired Grad-CAM-off comparison. The final `v0.3.0` public-tag checkout/run and comparison with historical reader-study heatmaps remain pending. See [Grad-CAM](../docs/gradcam.md) and [implementation status](../docs/implementation_status.md).
+
+## Inherited v0.2.1 checks
+
 The v0.2.1 implementation's 85 discovered cases cover input validation, strict checkpoint loading and ViT key compatibility, class order, raw-logit aggregation, progress, downloading and file protection. They require no patient data or model download.
 
 On 2026-10-23, WSL ran 85 cases: 83 passed and two Windows-only tests were skipped (alternate streams and directory-sharing behavior). Native Windows CPU also ran 85 cases: 83 passed and two hardlink tests were skipped because of account permissions. Actual skip names/reasons must be retained when reporting another environment.
 
 The selected-model checks are separate from the suite: WSL/RTX 5090 float32/no-TTA inference on ten private images matched frozen original-evaluator results within `atol=rtol=1e-5`, with zero class changes for all three models and the ensemble. Colab/A100 completed one synthetic-image paper-TTA run with the same dependency set and checked result records. The tested implementation uses torch 2.13.0, torchvision 0.28.0, transformers 5.10.4 and Pillow 13.0.0; see [implementation status](../docs/implementation_status.md) for builds, exact differences and scope limits.
 
-The final public notebook's GitHub checkout cell requires the published v0.2.1 tag. The tested pre-release Colab workflow supplied the reviewed code as a verified archive. Historical paper-TTA numerical equivalence and clinical performance are not established by either test suite or generated-image execution.
+The pre-release v0.2.1 Colab workflow supplied the reviewed code as a verified archive. Two subsequent public-tag runs recorded commit `95bbe9998f7433e3f65eb000e2d70ac2b4e3ff32`, package 0.2.1 and the expected source/weight hashes; prediction/run linkage, raw-logit aggregation and both two-JSON ZIPs were verified. Historical paper-TTA numerical equivalence and clinical performance are not established by either test suite or generated-image execution.
 
 ## Earlier dated checks
 

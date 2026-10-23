@@ -42,7 +42,13 @@ def build_parser(fixed_model=None):
     parser.add_argument("--batch-size", type=int, default=1)
     parser.add_argument("--num-workers", type=int, default=4, help="DataLoader workers (default 4 as in archived evaluators; 0 is a portable override).")
     parser.add_argument("--output", required=True, help="New .json or .csv result file; CSV also gets a .metadata.json sidecar.")
-    parser.add_argument("--overwrite", action="store_true", help="Explicitly replace an existing prediction output.")
+    parser.add_argument("--overwrite", action="store_true", help="Explicitly replace existing prediction and requested Grad-CAM outputs.")
+    parser.add_argument("--gradcam", action="store_true", help="Save unaugmented float32 Grad-CAM for ViT/ConvNeXtV2 beside the prediction output.")
+    parser.add_argument("--cam-target", choices=["model-predicted", "ensemble-predicted", "tako", "AMI"], default="model-predicted",
+                        help="CAM target: each model's TTA argmax (default), ensemble decision, or an explicit class.")
+    parser.add_argument("--cam-normalization", choices=["inference", "legacy-vit"], default="inference",
+                        help="inference matches current CLI preprocessing; legacy-vit uses mean/std 0.5 for ViT comparison only.")
+    parser.add_argument("--cam-opacity", type=float, default=0.6, help="Overlay opacity between 0 and 1 (default 0.6).")
     parser.add_argument("--progress", choices=["auto", "bar", "json", "off"], default="auto",
                         help="Progress on stderr: auto uses a terminal bar or plain log lines; json emits ECG_PROGRESS events; off disables it.")
     return parser
@@ -99,7 +105,7 @@ def output_paths(path):
     return [path, path.with_suffix(".metadata.json")] if path.suffix.lower() == ".csv" else [path]
 
 
-def write_result(result, output, overwrite=False, *, protected_paths=()):
+def write_result(result, output, overwrite=False, *, protected_paths=(), extra_files=()):
     destinations = output_paths(output)
     primary = destinations[0]
     if primary.suffix.lower() == ".json":
@@ -122,7 +128,7 @@ def write_result(result, output, overwrite=False, *, protected_paths=()):
             csv_bytes = stream.getvalue().encode("utf-8")
         metadata_bytes = (json.dumps(result["metadata"], indent=2, allow_nan=False) + "\n").encode("utf-8")
         contents = [(primary, csv_bytes), (destinations[1], metadata_bytes)]
-    write_files(contents, overwrite, protected_paths)
+    write_files([*contents, *extra_files], overwrite, protected_paths)
 
 
 def main(argv=None, fixed_model=None):
@@ -132,8 +138,18 @@ def main(argv=None, fixed_model=None):
     try:
         reporter.stage("Preparing inputs and output.")
         settings = settings_from_args(args)
+        cam_models = None
+        if args.gradcam:
+            from .gradcam_output import validate_cam_options
+            cam_models = validate_cam_options(args.model, args.cam_target, args.cam_normalization, args.cam_opacity)
+        elif args.cam_target != "model-predicted" or args.cam_normalization != "inference" or args.cam_opacity != 0.6:
+            raise ValueError("Use --gradcam when setting CAM options.")
         images = collect_images(args)
         destinations = output_paths(absolute_path(args.output))
+        cam_destinations = []
+        if cam_models:
+            from .gradcam_output import artifact_paths
+            cam_destinations = artifact_paths(destinations[0], len(images), cam_models)
         protected = set(images)
         if args.input_csv:
             protected.add(Path(args.input_csv).expanduser().resolve())
@@ -149,12 +165,21 @@ def main(argv=None, fixed_model=None):
             protected.add(weight_path)
             protected.add((weight_path.parent / "config.json").resolve())
             protected.add((weight_path.parent / "preprocessor_config.json").resolve())
-        validate_outputs(destinations, args.overwrite, protected)
+        validate_outputs([*destinations, *cam_destinations], args.overwrite, protected)
         from .inference import predict
         result = predict(images, args.weights_dir, args.model, settings, overrides,
                          progress_callback=reporter if args.progress != "off" else None)
-        reporter.stage("Saving predictions.")
-        write_result(result, destinations[0], args.overwrite, protected_paths=protected)
+        extra_files = []
+        if args.gradcam:
+            from .gradcam import generate_gradcam
+            from .gradcam_output import serialize_gradcam
+            reporter.stage("Computing unaugmented float32 Grad-CAM.")
+            cams = generate_gradcam(images, result, args.weights_dir, overrides,
+                                    target=args.cam_target, normalization=args.cam_normalization,
+                                    progress_callback=reporter if args.progress != "off" else None)
+            extra_files = serialize_gradcam(images, result, cams, destinations[0], args.cam_opacity)
+        reporter.stage("Saving predictions and Grad-CAM." if args.gradcam else "Saving predictions.")
+        write_result(result, destinations[0], args.overwrite, protected_paths=protected, extra_files=extra_files)
         reporter.complete("Predictions saved.")
     except ImportError:
         reporter.error()

@@ -1,8 +1,29 @@
 # Implementation and validation status
 
-Updated 2026-10-23 (JST); documentation revision 0.1.14. Package 0.2.1; weights 0.2.0.
+Updated 2026-10-24 (JST); documentation revision 0.1.17. Prepared package 0.3.0; weights 0.2.0.
 
-## Current implementation
+## Grad-CAM implementation and validation
+
+Version 0.3.0 adds optional ViT/ConvNeXtV2 Grad-CAM after prediction, with an unchanged prediction engine. It uses the archived layer choices and class-logit gradient reductions, defaults to current inference normalization, and offers an explicitly labelled legacy ViT normalization option. The maps use unaugmented float32 input and do not explain the TTA average or combined ensemble. See [Grad-CAM](gradcam.md) for preprocessing and numerical differences from the archived visualization.
+
+The checks below used candidate package `0.3.0.dev0`. The prepared `0.3.0` source differs only in documentation and version metadata; the implementation, dependency pins and notebook code cells are unchanged. The notebook validation text now reflects the completed GPU checks. Publication and the final public-tag Colab checkout/run remain separate steps.
+
+On 2026-10-23, the complete candidate suite ran 119 tests in native Windows/Python 3.13.15: 116 passed and three hardlink tests were skipped because the selected temporary directory did not support them. There were no failures or errors. The new Grad-CAM protected-hardlink test passed separately in a workspace directory with hardlink support. Exact skip names and test/source hashes are retained in private records.
+
+Using the three official selected safetensors on one generated 480 x 480 image, CPU/float32 inference with no TTA and, separately, with paper TTA (ViT 24/magnitude 1, ConvNeXtV2 1, MLP-Mixer 32/magnitude 3) produced exactly the same logits, probabilities and classes with Grad-CAM enabled or disabled. Both visualized models produced finite float32 maps at 480 x 480; saved metadata and PNG/NPY files were checked. The CPU no-TTA overlays were visually inspected.
+
+The candidate subsequently passed the following GPU checks on 2026-10-23:
+
+| Check | Environment and conditions | Result |
+|---|---|---|
+| Paired Grad-CAM off/on | WSL/RTX 5090, Python 3.12.12, CUDA float32, one generated 480 x 480 image, paper TTA 24/magnitude 1, 1, and 32/magnitude 3; batch 1, zero workers | All three-model and ensemble prediction values were exactly unchanged; two finite float32 480 x 480 maps and their saved PNG/NPY artifacts verified |
+| Colab candidate execution | A100-SXM4-40GB, Python 3.13.15, CUDA float32, one generated 480 x 480 image, same paper TTA; batch 1, four workers | Grad-CAM execution and saving completed; candidate archive, 111 source hashes, prediction/run linkage and all seven artifact hashes verified; downloaded ZIP matched the two JSONs and seven artifacts |
+
+Both runs used torch 2.13.0+cu130, torchvision 0.28.0+cu130, transformers 5.10.4, timm 1.0.22, numpy 2.2.6, Pillow 13.0.0 and safetensors 0.7.0. Source and selected-weight identities matched the reviewed implementation and official assets. The Colab run did not include a paired Grad-CAM-off comparison. An additional WSL run with torch 2.9.0/torchvision 0.24.0/transformers 4.57.3 passed the same paired prediction check; that is compatibility evidence for the earlier environment, not the current recommended setup.
+
+These are synthetic software checks. Historical reader-study heatmap equivalence and clinical localization validity remain unestablished. The prior v0.2.1 results below apply to its prediction workflow.
+
+## Inherited v0.2.1 implementation
 
 The v0.2.1 inference implementation protects JSON/CSV/metadata saving, retains uncertain partial weight installations, and permits only supported single-frame raster image decoding in the initial check and workers. The current requirements pin the tested inference versions separately from the unchanged historical training requirements.
 
@@ -20,7 +41,7 @@ The English Colab notebook uses a separate inference virtual environment, config
 | Colab execution | A100-SXM4-40GB, Python 3.13.15, CUDA, float32; one generated 480 x 480 RGB image; paper TTA 24/magnitude 1, 1, and 32/magnitude 3 | Weight preparation, inference, live progress, prediction saving and matching run record completed; record/source/weight identities and raw-logit aggregation verified |
 | CPU dependency comparison | Native Windows, Python 3.13.15, float32, batch 1, zero workers; ten private images without TTA and one generated image with paper TTA | Both comparisons passed `atol=rtol=1e-5`; zero class differences |
 
-All current checks use timm 1.0.22, transformers 5.10.4, numpy 2.2.6, Pillow 13.0.0 and safetensors 0.7.0. The tested setup used pip 26.2.2 and setuptools 84.2.1. The WSL and Colab records contain the same 57 installed package names/versions. The version-level PyPI metadata check found no active indexed advisories, yanked files or lookup errors for that set on 2026-10-23. This limited metadata check is not an OS/driver audit or proof that all vulnerabilities are absent.
+All current checks use timm 1.0.22, transformers 5.10.4, numpy 2.2.6, Pillow 13.0.0 and safetensors 0.7.0. The tested setup used pip 26.2.2 and setuptools 84.2.1. The original WSL and pre-release Colab dependency-review records contained the same 57 installed package names/versions. The later public-tag and Grad-CAM Colab records use certifi 2026.10.23 rather than the reviewed 2026.10.19; those full environments are not claimed to be identical. The version-level PyPI metadata check found no active indexed advisories, yanked files or lookup errors for the originally reviewed set on 2026-10-23. This limited metadata check is not an OS/driver audit or proof that all vulnerabilities are absent.
 
 The WSL comparison's maximum absolute logit difference was `7.034942627e-7`; its maximum probability difference was `1.352990612e-7`. The independent review recomputed the comparison and the equal raw-logit mean followed by softmax. Input, source and selected-weight hashes matched the recorded artifacts. The comparison reused frozen original-evaluator outputs; it did not rerun those evaluators with the new libraries.
 
@@ -28,11 +49,11 @@ The Colab record identifies the generated input, and its RGB pixel hash matched 
 
 The earlier source-only saving/image-format patch also passed same-runtime CPU comparisons with exactly unchanged predictions. The later dependency change is assessed by the separate tolerance-based CPU and WSL comparisons above; exact cross-version equality is not claimed.
 
-## Publication and remaining scope
+## v0.2.1 publication and remaining scope
 
 The final public notebook passed format/syntax validation and 12 local checks covering source checkout handling, isolated setup/reuse/failure, input selection, progress/error handling and paired-record ZIP saving. These include mocked subprocess/network operations and local Pillow input handling; they are separate from the completed A100 inference run.
 
-The tested pre-release Colab workflow loaded a verified source archive. The final public notebook changes source acquisition to the versioned GitHub checkout and records the resolved commit. That checkout cannot be verified against a published `v0.2.1` tag before publication; its live public-workflow check remains separate. The selected inference implementation and dependency configuration are the ones checked above.
+The tested pre-release Colab workflow loaded a verified source archive. The final public notebook changes source acquisition to the versioned GitHub checkout and records the resolved commit. The `v0.2.1` release was subsequently published at commit `95bbe9998f7433e3f65eb000e2d70ac2b4e3ff32`; the publication log confirms anonymous source-download verification and local tag fetching. Two final live public-tag Colab runs were subsequently verified: both recorded this commit, package 0.2.1, A100/CUDA float32 and paper TTA on one generated image. All 18 recorded source hashes and selected-weight/config hashes matched; each prediction hash matched its run record, and each ZIP contained the matching two JSONs. Independent recalculation confirmed per-model softmax, the mean raw logits and the ensemble decision. This completes the v0.2.1 public-tag execution check; it does not substitute for the future v0.3.0 public-tag check.
 
 The v0.2.0 public weight archive and all 11 bundled file hashes were verified on 2026-10-22. The v0.2.1 code continues to use those unchanged assets, so a new weight archive is not required.
 

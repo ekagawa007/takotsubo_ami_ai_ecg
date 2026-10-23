@@ -1,20 +1,32 @@
 # takotsubo_ami_ai_ecg
 
-**Documentation version:** `0.1.14`
+**Documentation version:** `0.1.17`
 
-**Inference package version:** `0.2.1`
+**Inference package version:** `0.3.0`
 
-**Last updated:** 2026-10-23 (JST)
+**Last updated:** 2026-10-24 (JST)
 
 Research code for ECG-image models distinguishing takotsubo syndrome from acute anterior STEMI, including model development, ensemble evaluation, and a human diagnostic study.
 
+## DISCLAIMER
+
+This repository and its associated model weights are intended for research. No warranty is given regarding the clinical accuracy, reliability, or fitness for clinical use of the code, model weights, predictions, or Grad-CAM visualizations.
+
+To the fullest extent permitted by applicable law and subject to the applicable licenses, the authors and copyright holders accept no liability for claims, losses, damages, or other consequences arising from use of these materials or their outputs, including use in diagnosis or treatment decisions.
+
+The warranty exclusions and liability limitations in the [code license](LICENSE) and the respective [model-weight licenses](WEIGHTS_LICENSE.md) apply. This notice summarizes intended use and does not amend those licenses.
+
 ## Current status
 
-Version `0.2.1` protects result-file saving, retains incomplete weight installations for inspection, and limits image decoding to supported single-frame raster formats. It also provides the tested inference dependency set and a strict ViT checkpoint-name adapter for Transformers 5.10.4. Selected tensor values, paper settings and class order are unchanged. The downloader continues to use the **v0.2.0 weight Release**.
+Version `0.3.0` adds optional Grad-CAM output for ViT and ConvNeXtV2. The prediction engine, selected weights, class order, paper TTA settings and raw-logit ensemble are unchanged from `v0.2.1`. The downloader continues to use the **v0.2.0 weight Release**. Release preparation changes only documentation and version metadata from the tested `0.3.0.dev0` candidate; publication and the final `v0.3.0` public-tag Colab check remain separate steps.
 
-On 2026-10-23, the updated inference implementation passed a WSL/RTX 5090 float32 comparison against frozen original-evaluator results on the same ten private ECG images with no TTA. All three models and the ensemble had zero class differences and were within `atol=rtol=1e-5`. The same dependency set completed Colab/A100 inference on one generated 480 x 480 image with the paper TTA settings, live progress and result saving. These are scoped implementation and execution checks, not clinical validation or historical paper-TTA numerical equivalence.
+Add `--gradcam` to an existing ViT, ConvNeXtV2 or ensemble prediction command to save the prepared input, heatmaps, overlays and float32 numerical maps beside the prediction. Each map uses one unaugmented float32 pass. By default it targets that individual model's TTA-logit argmax and uses the same ImageNet normalization as current inference. The two model targets can differ. These maps are not attributions of the three-model ensemble or its TTA average. See [Grad-CAM methods and options](docs/gradcam.md).
 
-The Colab notebook uses a separate inference virtual environment, defaults to a generated example, accepts an existing permitted image as an option, and downloads the matching prediction and run record in one ZIP. The tested pre-release workflow supplied the reviewed source as a verified archive. The final notebook selects Git tag `v0.2.1`; that GitHub checkout path requires publication of the tag and a subsequent public-workflow check. See [implementation status](docs/implementation_status.md) and [release notes](docs/releases/v0.2.1.md).
+The archived ViT visualizer used mean/std 0.5 rather than current inference normalization. `--cam-normalization legacy-vit` exposes that difference for explicit comparisons; it does not establish reproduction of historical reader-study images. MLP-Mixer predictions remain part of the ensemble, but no MLP-Mixer or ensemble heatmap is supplied. The archived reader-study code uses ViT and ConvNeXtV2 visualizations.
+
+The tested Grad-CAM candidate completed synthetic-image paper-TTA execution on WSL/RTX 5090 and Colab/A100 with the current inference dependencies. The paired WSL check confirmed exactly unchanged predictions with Grad-CAM enabled or disabled; both platforms produced verified 480 x 480 maps and saved artifacts. The `v0.2.1` baseline also passed ten-image float32/no-TTA comparisons, anonymous source-download verification and its final public-tag Colab runs. See [implementation status](docs/implementation_status.md) for the tested versions and remaining scope.
+
+The English Colab example uses a separate inference environment, defaults to a generated image, displays per-model Grad-CAM overlays and downloads matching predictions, the run record and visualization files together. Its public checkout selects the planned `v0.3.0` tag, which becomes usable after that release is published. Before publication, use the separately supplied candidate-validation notebook and source archive.
 
 The original training, evaluation and human-study sources retain the supplied learning procedures, with personal paths and identifying-looking examples generalized. The [model card](MODEL_CARD.md) describes the task, selected checkpoints and limitations. See [weight terms](WEIGHTS_LICENSE.md) and [upstream notices](THIRD_PARTY_NOTICES.md); the ViT noncommercial condition applies to the complete weight bundle.
 
@@ -62,6 +74,14 @@ The download command requires the `v0.2.0` Release asset. If it is unavailable, 
 Progress is enabled automatically: the CLI displays a bar in an interactive terminal and plain updates when redirected. Add `--progress off` to suppress it. The Colab notebook displays a live progress bar. Progress messages go to stderr and are separate from saved prediction files.
 
 The downloader prepares the weight layout described in [weights/README.md](weights/README.md).
+
+### Optional Grad-CAM
+
+```bash
+python examples/predict_ensemble.py --image data/example_ecg.png --weights-dir weights --output outputs/prediction_with_cam.json --gradcam
+```
+
+`--cam-target model-predicted` is the default. Use `--cam-target tako`, `--cam-target AMI`, or `--cam-target ensemble-predicted` for an explicit alternative target. The last option chooses the ensemble's predicted class for each individual model map; it does not create an ensemble attribution. `--cam-opacity` sets overlay opacity (default `0.6`). Existing output protection applies to all PNG, NPY and prediction files. Read numerical maps with `numpy.load(path, allow_pickle=False)`.
 
 ### ECG image files for the examples
 
@@ -112,6 +132,7 @@ The root [requirements.txt](requirements.txt) preserves all 165 entries and orig
 | Workflow | Target environment | Validation status |
 |---|---|---|
 | New inference CLIs and shared package | WSL/RTX 5090, Python 3.12.12; Colab/A100, Python 3.13.15 | v0.2.1: ten-image WSL no-TTA agreement; Colab synthetic-image paper-TTA execution. Both use torch 2.13.0+cu130, torchvision 0.28.0+cu130, Transformers 5.10.4 and Pillow 13.0.0. See [implementation status](docs/implementation_status.md). |
+| Optional Grad-CAM | Tested candidate `0.3.0.dev0`: Windows CPU; WSL/RTX 5090, Python 3.12.12; Colab/A100, Python 3.13.15 | Synthetic paper-TTA GPU runs completed on WSL and Colab; enabling Grad-CAM preserved all predictions exactly in the paired WSL check and earlier CPU checks. 119 local tests: 116 passed, three skipped. Historical-map equivalence and final `v0.3.0` public-tag Colab validation remain pending. |
 | Original training and evaluation | Linux/WSL or Colab | Source retained; complete reproduction pending |
 | Human-study administrator | Interactive Linux/WSL terminal with graphical display | Source retained; environment validation pending |
 
@@ -125,7 +146,7 @@ Code and documentation are available in the [GitHub repository](https://github.c
 
 The code is licensed under the [MIT License](LICENSE). Copyright (c) 2026 Eisuke Kagawa. External libraries retain their respective licenses. Model binaries are supplied separately from the Git source tree. Weight terms are documented in [WEIGHTS_LICENSE.md](WEIGHTS_LICENSE.md): the complete bundle includes the ViT noncommercial condition. The code's MIT License does not remove those separate terms. The complete paper author list and final paper metadata remain to be confirmed. See the [publication and licensing plan](docs/publication_plan_ja.md).
 
-Documentation version `0.1.14` identifies this README revision; `0.2.1` identifies the inference package. The weights retain version `0.2.0`. Published release [v0.1.1](https://github.com/ekagawa007/takotsubo_ami_ai_ecg/releases/tag/v0.1.1), commit `70ae84ce96bf939ef117b6d2924318aef8716b81`, identifies the requirements-containing source release. It does not include this later inference revision. Existing release tags are retained.
+Documentation version `0.1.17` identifies this README revision; `0.3.0` identifies the prepared inference package. The weights retain version `0.2.0`. Published release [v0.1.1](https://github.com/ekagawa007/takotsubo_ami_ai_ecg/releases/tag/v0.1.1), commit `70ae84ce96bf939ef117b6d2924318aef8716b81`, identifies the requirements-containing source release. It does not include this later inference revision. Existing release tags are retained.
 
 ## Revision history
 
@@ -133,6 +154,9 @@ Documentation versions track README revisions. Update the version/date above and
 
 | Date (JST) | Documentation version | Changes |
 |---|---|---|
+| 2026-10-24 | 0.1.17 | Added a prominent research-use disclaimer covering code, weights, predictions and Grad-CAM, with warranty and liability terms subject to applicable law and each license. Updated both Colab validation summaries to record completed candidate GPU checks and distinguish pending public-tag and historical-map checks. |
+| 2026-10-23 | 0.1.16 | Prepared package 0.3.0 with unchanged tested Grad-CAM implementation. Recorded WSL/RTX 5090 paper-TTA prediction preservation, Colab/A100 candidate execution and artifact checks, and completed public-tag v0.2.1 Colab verification. Historical-map equivalence and final v0.3.0 public-tag execution remain separate checks. |
+| 2026-10-23 | 0.1.15 | Prepared optional ViT/ConvNeXtV2 Grad-CAM CLI and English Colab examples; documented targets, no-TTA map generation, legacy ViT normalization difference, protected visualization saving and pending GPU/historical-map validation. |
 | 2026-10-23 | 0.1.14 | Integrated the tested inference dependencies and strict ViT checkpoint-name adapter into package 0.2.1. Recorded WSL/RTX 5090 ten-image no-TTA agreement and Colab/A100 synthetic-image paper-TTA execution. Colab now uses a separate environment, selectable synthetic/file input and one ZIP for both result records. Source publication and the final tag-based Colab checkout remain separate checks. |
 | 2026-10-23 | 0.1.13 | Prepared package 0.2.1: protected result saving, non-destructive handling of incomplete weight installations, supported single-frame image formats, and matching CLI/Colab input checks. Added the ECG image format table and documented the reviewed v0.2.0 public-download/Colab record. Patch and dependency verification scope is recorded separately. |
 | 2026-10-22 | 0.1.12 | Added package 0.2.0 with a separate weights Release archive, checksums, download command and Colab Release-download default with a local option. Added the model card, confirmed separate weight terms, upstream notices and release notes. Recorded reported Colab progress success while retaining the documented validation limits. Passed 50 tests, five simulated notebook download cases and fresh archive-install/CPU inference checks with unchanged prediction values. Live public Release and Colab-download checks are recorded separately from local validation. |

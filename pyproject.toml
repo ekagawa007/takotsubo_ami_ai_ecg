@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "takotsubo-ami-ai-ecg"
-version = "0.2.1"
+version = "0.3.0"
 description = "Research inference for ECG image classification of takotsubo and anterior STEMI"
 requires-python = ">=3.11"
 license = "MIT"
