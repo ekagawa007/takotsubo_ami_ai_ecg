@@ -1,12 +1,33 @@
 # Implementation and validation status
 
-Updated 2026-10-24 (JST); documentation revision 0.1.17. Prepared package 0.3.0; weights 0.2.0.
+Updated 2026-10-24 (JST); documentation revision 0.1.18. Published package 0.3.0; weights 0.2.0.
+
+## Published v0.3.0 and final Colab verification
+
+The [v0.3.0 release](https://github.com/ekagawa007/takotsubo_ami_ai_ecg/releases/tag/v0.3.0) identifies commit `341ac955353f535fb74a4b6d8005a8b3b1290ad4`. Anonymous download verification matched all 111 published source files to the reviewed release. The source tag remains fixed; subsequent documentation updates describe the completed checks without changing the inference package or weights.
+
+On 2026-10-24, the public-tag Colab workflow completed prediction and Grad-CAM using the official v0.2.0 weights. The saved results were independently checked:
+
+| Item | Verified scope |
+|---|---|
+| Input and runtime | One generated 480 x 480 RGB image; NVIDIA A100-SXM4-40GB, Python 3.13.16, CUDA float32; batch size 1, four workers, seed 1234, strict480 input policy |
+| Prediction settings | ViT TTA 24/magnitude 1; ConvNeXtV2 TTA 1 (no TTA); MLP-Mixer TTA 32/magnitude 3; equal-weight raw-logit average followed by softmax |
+| Source and weights | The run recorded v0.3.0 and the release commit above; all 20 recorded critical-source hashes, three selected-weight hashes and the ViT configuration hash matched |
+| Prediction consistency | The prediction JSON matched its run-record hash. Recomputed per-model softmax, ensemble mean raw logits, ensemble softmax and the decision agreed with the saved values |
+| Grad-CAM | ViT and ConvNeXtV2 each produced a finite, nonconstant float32 480 x 480 map; target classes, layers and normalization matched the recorded settings |
+| Saved outputs | The ZIP contained the matching two JSON records, five RGB PNGs and two NPY arrays. All seven visualization-file hashes and sizes matched; heatmap and overlay pixels agreed with rendering recalculated from the saved numerical maps |
+
+This public run used torch 2.13.0+cu130, torchvision 0.28.0+cu130, transformers 5.10.4, timm 1.0.22, numpy 2.2.6, Pillow 13.0.0 and safetensors 0.7.0. Relative to the earlier Grad-CAM Colab candidate, Python changed from 3.13.15 to 3.13.16; the recorded installed-package versions were the same. This comparison is not a new dependency vulnerability audit.
+
+The public-tag Colab execution check is complete. It is a one-image software workflow check, without a paired Grad-CAM-off run in Colab. The paired prediction-preservation evidence comes from the CPU and WSL checks below. Historical stochastic TTA equivalence, historical reader-study heatmap equivalence and clinical performance are not established by this synthetic input.
+
+The current [Colab notebook](https://colab.research.google.com/github/ekagawa007/takotsubo_ami_ai_ecg/blob/main/examples/colab_inference.ipynb) includes updated validation notes while its source-loading cell retains `GIT_REF = "v0.3.0"`.
 
 ## Grad-CAM implementation and validation
 
 Version 0.3.0 adds optional ViT/ConvNeXtV2 Grad-CAM after prediction, with an unchanged prediction engine. It uses the archived layer choices and class-logit gradient reductions, defaults to current inference normalization, and offers an explicitly labelled legacy ViT normalization option. The maps use unaugmented float32 input and do not explain the TTA average or combined ensemble. See [Grad-CAM](gradcam.md) for preprocessing and numerical differences from the archived visualization.
 
-The checks below used candidate package `0.3.0.dev0`. The prepared `0.3.0` source differs only in documentation and version metadata; the implementation, dependency pins and notebook code cells are unchanged. The notebook validation text now reflects the completed GPU checks. Publication and the final public-tag Colab checkout/run remain separate steps.
+The checks below used candidate package `0.3.0.dev0` on 2026-10-23. The released `0.3.0` source differs from that candidate only in documentation and version metadata; the implementation, dependency pins and notebook code cells are unchanged. These dated candidate results are retained separately from the completed public-tag verification above.
 
 On 2026-10-23, the complete candidate suite ran 119 tests in native Windows/Python 3.13.15: 116 passed and three hardlink tests were skipped because the selected temporary directory did not support them. There were no failures or errors. The new Grad-CAM protected-hardlink test passed separately in a workspace directory with hardlink support. Exact skip names and test/source hashes are retained in private records.
 
@@ -53,7 +74,7 @@ The earlier source-only saving/image-format patch also passed same-runtime CPU c
 
 The final public notebook passed format/syntax validation and 12 local checks covering source checkout handling, isolated setup/reuse/failure, input selection, progress/error handling and paired-record ZIP saving. These include mocked subprocess/network operations and local Pillow input handling; they are separate from the completed A100 inference run.
 
-The tested pre-release Colab workflow loaded a verified source archive. The final public notebook changes source acquisition to the versioned GitHub checkout and records the resolved commit. The `v0.2.1` release was subsequently published at commit `95bbe9998f7433e3f65eb000e2d70ac2b4e3ff32`; the publication log confirms anonymous source-download verification and local tag fetching. Two final live public-tag Colab runs were subsequently verified: both recorded this commit, package 0.2.1, A100/CUDA float32 and paper TTA on one generated image. All 18 recorded source hashes and selected-weight/config hashes matched; each prediction hash matched its run record, and each ZIP contained the matching two JSONs. Independent recalculation confirmed per-model softmax, the mean raw logits and the ensemble decision. This completes the v0.2.1 public-tag execution check; it does not substitute for the future v0.3.0 public-tag check.
+The tested pre-release Colab workflow loaded a verified source archive. The final public notebook changes source acquisition to the versioned GitHub checkout and records the resolved commit. The `v0.2.1` release was subsequently published at commit `95bbe9998f7433e3f65eb000e2d70ac2b4e3ff32`; the publication log confirms anonymous source-download verification and local tag fetching. Two final live public-tag Colab runs were subsequently verified: both recorded this commit, package 0.2.1, A100/CUDA float32 and paper TTA on one generated image. All 18 recorded source hashes and selected-weight/config hashes matched; each prediction hash matched its run record, and each ZIP contained the matching two JSONs. Independent recalculation confirmed per-model softmax, the mean raw logits and the ensemble decision. This completes the v0.2.1 public-tag execution check. The separate v0.3.0 public-tag check is recorded above.
 
 The v0.2.0 public weight archive and all 11 bundled file hashes were verified on 2026-10-22. The v0.2.1 code continues to use those unchanged assets, so a new weight archive is not required.
 

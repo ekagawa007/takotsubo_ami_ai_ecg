@@ -1,6 +1,6 @@
 # Inference validation
 
-Updated 2026-10-23 (JST); documentation revision 0.1.16.
+Updated 2026-10-24 (JST); documentation revision 0.1.18.
 
 Install the current inference dependencies, then run from the repository root:
 
@@ -8,9 +8,9 @@ Install the current inference dependencies, then run from the repository root:
 python -m unittest discover -s tests -p "test_*.py" -v
 ```
 
-## Grad-CAM validation for the prepared 0.3.0 release
+## Grad-CAM validation for the published 0.3.0 release
 
-The prepared `0.3.0` source changes only documentation and version metadata from the tested `0.3.0.dev0` candidate. The checks below retain the version at which they were performed.
+The published `0.3.0` source differs only in documentation and version metadata from the tested `0.3.0.dev0` candidate. The checks below retain the version at which they were performed. The documentation update to revision 0.1.18 leaves the inference implementation and notebook code cells unchanged.
 
 On 2026-10-23, the candidate `0.3.0.dev0` suite ran **119 tests: 116 passed, three skipped, zero failures/errors** in native Windows, Python 3.13.15, torch 2.13.0+cpu and the unchanged v0.2.1 dependency set. The three skipped cases require hardlinks unavailable in the selected temporary directory. The Grad-CAM protected-hardlink test also passed separately in a workspace directory where hardlinks were supported; exact environment-specific skips are retained in private records.
 
@@ -18,7 +18,9 @@ New tests cover an analytic ConvNeXtV2 map, archived ViT channel-gradient calcul
 
 Separate selected-weight CPU checks on one generated 480 x 480 image passed with TTA disabled and with the paper TTA settings (24/1/32): the three-model/ensemble prediction values were exactly unchanged when Grad-CAM was enabled, both maps were finite float32 480 x 480 arrays, and saved PNG/NPY/JSON records were checked. A subsequent paired WSL/RTX 5090 run also passed with exactly unchanged predictions under paper TTA, CUDA float32, batch 1 and zero workers, using Python 3.12.12, torch 2.13.0+cu130, torchvision 0.28.0+cu130 and transformers 5.10.4.
 
-Colab/A100 candidate execution completed under paper TTA with Python 3.13.15, the same core inference pins, CUDA float32, batch 1 and four workers. The matching candidate archive/source hashes, prediction/run records, seven visualization artifacts and nine-member ZIP were verified. This Colab run did not include a paired Grad-CAM-off comparison. The final `v0.3.0` public-tag checkout/run and comparison with historical reader-study heatmaps remain pending. See [Grad-CAM](../docs/gradcam.md) and [implementation status](../docs/implementation_status.md).
+Colab/A100 candidate execution completed under paper TTA with Python 3.13.15, the same core inference pins, CUDA float32, batch 1 and four workers. The matching candidate archive/source hashes, prediction/run records, seven visualization artifacts and nine-member ZIP were verified. This Colab run did not include a paired Grad-CAM-off comparison.
+
+On 2026-10-24, the published `v0.3.0` Colab workflow completed paper-TTA inference and Grad-CAM on one generated 480 x 480 image using A100, Python 3.13.16, CUDA float32, batch size 1 and four workers. All 20 recorded source hashes, the three selected-weight hashes and ViT configuration hash matched the published source and official assets. Prediction calculations, JSON linkage, artifact hashes and sizes, both finite float32 maps, and heatmap/overlay pixels were verified. The ZIP contained two JSON records, five PNGs and two NPY arrays. This was an execution/artifact check rather than a rerun of the 119-test candidate suite, and did not include a paired Grad-CAM-off comparison. Comparison with historical reader-study heatmaps remains pending. See [Grad-CAM](../docs/gradcam.md) and [implementation status](../docs/implementation_status.md).
 
 ## Inherited v0.2.1 checks
 

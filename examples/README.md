@@ -1,6 +1,6 @@
 # Inference examples
 
-Updated 2026-10-23 (JST); documentation revision 0.1.16. Package 0.3.0.
+Updated 2026-10-24 (JST); documentation revision 0.1.18. Package 0.3.0.
 
 The four CLIs and the English Colab notebook share the same implementation:
 
@@ -27,7 +27,7 @@ Paper defaults are ViT TTA 24/magnitude 1, ConvNeXtV2 no TTA, MLP-Mixer TTA 32/m
 
 ## Colab setup and inputs
 
-Open `colab_inference.ipynb` in a fresh GPU runtime. The source defaults to `GIT_REF = "v0.3.0"`, which requires that tag to be published. The notebook records the resolved commit and source identity. Until v0.3.0 is published, use the separately supplied candidate-validation notebook with its verified source ZIP. Candidate Grad-CAM execution has passed on A100; the final public-tag checkout/run remains a separate post-publication check.
+Open the [English Colab notebook](https://colab.research.google.com/github/ekagawa007/takotsubo_ami_ai_ecg/blob/main/examples/colab_inference.ipynb) in a fresh GPU runtime. Its source-loading cell selects `GIT_REF = "v0.3.0"`, published at commit `341ac955353f535fb74a4b6d8005a8b3b1290ad4`. The notebook records the resolved commit and source identity. The public-tag A100 run completed on 2026-10-24, including paper-TTA inference, Grad-CAM and result ZIP saving. The notebook on `main` includes this validation summary while continuing to load the fixed source tag.
 
 Setup creates a separate inference virtual environment at `/content/ecg_inference_venv`. `INFERENCE_PYTHON` is used for library checks, image processing, weight downloading and inference. The kernel's existing ML packages are retained, so normally no kernel restart is required. If the kernel is restarted manually, rerun from the first code cell. An incomplete installation is not reused as a ready environment; start a fresh runtime after an installation failure.
 
@@ -60,7 +60,7 @@ Prediction outputs must be new by default. `--overwrite` can explicitly replace 
 
 The downloader retains incomplete files after an installation failure. A retry reuses matching complete files; conflicting partial files require inspection or a new destination. Archive and member hash checks remain mandatory.
 
-The v0.2.1 prediction baseline passed WSL/RTX 5090 float32/no-TTA comparison on ten real ECGs and final public-tag Colab/A100 paper-TTA execution on generated images. Candidate `0.3.0.dev0` passed 116 of 119 local tests (three hardlink tests skipped), selected-weight CPU checks with and without paper TTA, and paper-TTA GPU execution on WSL/RTX 5090 and Colab/A100. Paired CPU and WSL runs confirmed exactly unchanged predictions with Grad-CAM enabled or disabled; the Colab run verified execution, source identity and saved artifacts without an on/off comparison. Package `0.3.0` changes only documentation and version metadata from that candidate. Historical-map equivalence and final `v0.3.0` public-tag execution remain pending. See [Grad-CAM details](../docs/gradcam.md) and [implementation status](../docs/implementation_status.md).
+The v0.2.1 prediction baseline passed WSL/RTX 5090 float32/no-TTA comparison on ten real ECGs and final public-tag Colab/A100 paper-TTA execution on generated images. Candidate `0.3.0.dev0` passed 116 of 119 local tests (three hardlink tests skipped), selected-weight CPU checks with and without paper TTA, and paper-TTA GPU execution on WSL/RTX 5090 and Colab/A100. Paired CPU and WSL runs confirmed exactly unchanged predictions with Grad-CAM enabled or disabled; the Colab run verified execution, source identity and saved artifacts without an on/off comparison. Published package `0.3.0` differs only in documentation and version metadata from that candidate. Its public-tag Colab/A100 workflow subsequently passed on 2026-10-24 with Python 3.13.16, CUDA float32 and paper TTA on one generated image. Recorded source/weight identities, prediction calculations and all nine downloaded files were verified. This public Colab run also did not include an on/off comparison. Historical-map equivalence remains unverified. See [Grad-CAM details](../docs/gradcam.md) and [implementation status](../docs/implementation_status.md).
 
 ## Optional Grad-CAM
 
