@@ -1,10 +1,10 @@
 # takotsubo_ami_ai_ecg
 
-**Documentation version:** `0.1.18`
+**Documentation version:** `0.1.19`
 
 **Inference package version:** `0.3.0`
 
-**Last updated:** 2026-10-24 (JST)
+**Last updated:** 2026-10-27 (JST)
 
 Research code for ECG-image models distinguishing takotsubo syndrome from acute anterior STEMI, including model development, ensemble evaluation, and a human diagnostic study.
 
@@ -141,13 +141,52 @@ The root [requirements.txt](requirements.txt) preserves all 165 entries and orig
 
 Patient ECG data, participant records, credentials, private originals, and local backups are excluded. No public patient-image sample is required to use the examples: users provide their own permitted images. Existing private ECG images and prediction CSVs are used for reproduction checks without being published.
 
-Code and documentation are available in the [GitHub repository](https://github.com/ekagawa007/takotsubo_ami_ai_ecg). The `v0.2.0` assets are `takotsubo_ami_ai_ecg_weights_v0.2.0.zip` and `SHA256SUMS.txt`. The three selected safetensors files total 958,657,088 bytes; the ZIP is 958,701,120 bytes. Use the [release page](https://github.com/ekagawa007/takotsubo_ami_ai_ecg/releases/tag/v0.2.0) to check asset availability. The separate weight terms are confirmed: ViT uses CC BY-NC 4.0 with the documented upstream notices; author-owned ConvNeXtV2 and MLP-Mixer contributions use MIT terms. Live public-download verification is recorded separately. The paper-specific release can later be archived on Zenodo for a version-specific DOI.
+Code and documentation are available in the [GitHub repository](https://github.com/ekagawa007/takotsubo_ami_ai_ecg). The `v0.2.0` assets are `takotsubo_ami_ai_ecg_weights_v0.2.0.zip` and `SHA256SUMS.txt`. The three selected safetensors files total 958,657,088 bytes; the ZIP is 958,701,120 bytes. Use the [release page](https://github.com/ekagawa007/takotsubo_ami_ai_ecg/releases/tag/v0.2.0) to check asset availability. The separate weight terms are confirmed: ViT uses CC BY-NC 4.0 with the documented upstream notices; author-owned ConvNeXtV2 and MLP-Mixer contributions use MIT terms. Live public-download verification is recorded separately. The [v0.3.0 source archive](https://doi.org/10.5281/zenodo.23666137) and [v0.2.0 weight archive](https://doi.org/10.5281/zenodo.23666262) are also published on Zenodo with separate version-specific DOIs.
 
 ## License and citation
 
 The code is licensed under the [MIT License](LICENSE). Copyright (c) 2026 Eisuke Kagawa. External libraries retain their respective licenses. Model binaries are supplied separately from the Git source tree. Weight terms are documented in [WEIGHTS_LICENSE.md](WEIGHTS_LICENSE.md): the complete bundle includes the ViT noncommercial condition. The code's MIT License does not remove those separate terms. The complete paper author list and final paper metadata remain to be confirmed. See the [publication and licensing plan](docs/publication_plan_ja.md).
 
-Documentation version `0.1.18` identifies this README revision; `0.3.0` identifies the published inference package. The weights retain version `0.2.0`. Published release [v0.1.1](https://github.com/ekagawa007/takotsubo_ami_ai_ecg/releases/tag/v0.1.1), commit `70ae84ce96bf939ef117b6d2924318aef8716b81`, identifies the requirements-containing source release. It does not include this later inference revision. Existing release tags are retained.
+### How to cite
+
+If you use the software, please cite the software record below. If you also use the distributed trained model weights, please cite the weight record as well. [CITATION.cff](CITATION.cff) contains the machine-readable software citation and a separate reference to the weights. These citations identify the archived versions used; a later software or weight version should be cited using its own record.
+
+**Software (v0.3.0):**
+
+Kagawa, E. (2026). *takotsubo_ami_ai_ecg: research software for ECG-image classification and Grad-CAM* (Version 0.3.0) [Computer software]. Zenodo. https://doi.org/10.5281/zenodo.23666137
+
+```bibtex
+@software{kagawa_takotsubo_ami_software_2026,
+  author = {Kagawa, Eisuke},
+  title = {{takotsubo_ami_ai_ecg: research software for ECG-image classification and Grad-CAM}},
+  year = {2026},
+  version = {0.3.0},
+  publisher = {Zenodo},
+  doi = {10.5281/zenodo.23666137},
+  url = {https://doi.org/10.5281/zenodo.23666137}
+}
+```
+
+**Trained model weights (v0.2.0):**
+
+Kagawa, E. (2026). *takotsubo_ami_ai_ecg: trained ViT, ConvNeXtV2 and MLP-Mixer inference weights* (Version 0.2.0) [Trained model weights]. Zenodo. https://doi.org/10.5281/zenodo.23666262
+
+```bibtex
+@misc{kagawa_takotsubo_ami_weights_2026,
+  author = {Kagawa, Eisuke},
+  title = {{takotsubo_ami_ai_ecg: trained ViT, ConvNeXtV2 and MLP-Mixer inference weights}},
+  year = {2026},
+  version = {0.2.0},
+  publisher = {Zenodo},
+  note = {Trained model weights},
+  doi = {10.5281/zenodo.23666262},
+  url = {https://doi.org/10.5281/zenodo.23666262}
+}
+```
+
+The software DOI identifies the source at the original v0.3.0 commit `341ac955353f535fb74a4b6d8005a8b3b1290ad4`. The citation file and subsequent documentation updates are maintained on the default branch; the archived source remains that release snapshot. The software's first release date is 2026-10-23, and the weights' first release date is 2026-10-22. Both Zenodo records were published on 2026-10-27. Weight use remains subject to the model-specific terms in [WEIGHTS_LICENSE.md](WEIGHTS_LICENSE.md).
+
+Documentation version `0.1.19` identifies this README revision; `0.3.0` identifies the published inference package. The weights retain version `0.2.0`. Published release [v0.1.1](https://github.com/ekagawa007/takotsubo_ami_ai_ecg/releases/tag/v0.1.1), commit `70ae84ce96bf939ef117b6d2924318aef8716b81`, identifies the requirements-containing source release. It does not include this later inference revision. Existing release tags are retained.
 
 ## Revision history
 
@@ -155,6 +194,7 @@ Documentation versions track README revisions. Update the version/date above and
 
 | Date (JST) | Documentation version | Changes |
 |---|---|---|
+| 2026-10-27 | 0.1.19 | Added CITATION.cff for the archived v0.3.0 software, a separate v0.2.0 weight reference, and Zenodo DOI links with plain-text and BibTeX citations. Recorded Zenodo publication and distinguished the archived release from later citation and documentation updates. |
 | 2026-10-24 | 0.1.18 | Recorded the published v0.3.0 commit, anonymous verification of all 111 source files, and completed public-tag Colab/A100 paper-TTA inference and Grad-CAM on one generated image with Python 3.13.16. Updated current documentation and Colab Markdown; code cells, dependencies, package version, weights and release tags are unchanged. |
 | 2026-10-24 | 0.1.17 | Added a prominent research-use disclaimer covering code, weights, predictions and Grad-CAM, with warranty and liability terms subject to applicable law and each license. Updated both Colab validation summaries to record completed candidate GPU checks and distinguish pending public-tag and historical-map checks. |
 | 2026-10-23 | 0.1.16 | Prepared package 0.3.0 with unchanged tested Grad-CAM implementation. Recorded WSL/RTX 5090 paper-TTA prediction preservation, Colab/A100 candidate execution and artifact checks, and completed public-tag v0.2.1 Colab verification. Historical-map equivalence and final v0.3.0 public-tag execution remain separate checks. |

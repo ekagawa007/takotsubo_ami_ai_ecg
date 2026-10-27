@@ -1,0 +1,31 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite the software version below. If you also use the distributed trained model weights, please cite the separate weight record in references."
+type: software
+title: "takotsubo_ami_ai_ecg: research software for ECG-image classification and Grad-CAM"
+authors:
+  - family-names: "Kagawa"
+    given-names: "Eisuke"
+    affiliation: "Hiroshima North Medical Center Asa Citizens Hospital"
+    orcid: "https://orcid.org/0000-0002-5583-3152"
+version: "0.3.0"
+doi: "10.5281/zenodo.23666137"
+date-released: "2026-10-23"
+repository-code: "https://github.com/ekagawa007/takotsubo_ami_ai_ecg"
+url: "https://doi.org/10.5281/zenodo.23666137"
+commit: "341ac955353f535fb74a4b6d8005a8b3b1290ad4"
+license: MIT
+references:
+  - type: generic
+    title: "takotsubo_ami_ai_ecg: trained ViT, ConvNeXtV2 and MLP-Mixer inference weights"
+    authors:
+      - family-names: "Kagawa"
+        given-names: "Eisuke"
+        affiliation: "Hiroshima North Medical Center Asa Citizens Hospital"
+        orcid: "https://orcid.org/0000-0002-5583-3152"
+    version: "0.2.0"
+    date-released: "2026-10-22"
+    year: 2026
+    publisher:
+      name: "Zenodo"
+    doi: "10.5281/zenodo.23666262"
+    url: "https://doi.org/10.5281/zenodo.23666262"
