@@ -1,12 +1,12 @@
 # Running inference
 
-Updated 2026-10-28 (JST); documentation revision 0.1.21. Inference package 0.3.1. See [implementation status](implementation_status.md) for checks by version.
+Updated 2026-10-28 (JST); documentation revision 0.1.22. Inference package 0.3.1. See [implementation status](implementation_status.md) for checks by version.
 
 The new CLIs and Colab notebook share one inference implementation. The defaults record the paper's selected models, TTA counts/magnitudes, class order, and raw-logit ensemble. They do not establish that a new runtime reproduces every saved prediction; compare against the original results using the same inputs and execution settings.
 
 ## Setup
 
-Use a fresh Python 3.11+ environment. The tested WSL runtime uses Python 3.12.12 and an RTX 5090; The v0.3.1 candidate Colab check used Python 3.13.16 and an A100. Both GPU checks used torch 2.13.0+cu130, torchvision 0.28.0+cu130 and filelock 4.2.1. WSL used an isolated dependency overlay; Colab used a separately installed inference environment. See [implementation status](implementation_status.md) for the completed candidate checks and separate final public-tag acquisition check. From the repository root in WSL/Linux:
+Use a fresh Python 3.11+ environment. The tested WSL runtime uses Python 3.12.12 and an RTX 5090; the v0.3.1 candidate and public-tag Colab checks used Python 3.13.16 and an A100. The WSL and Colab GPU checks used torch 2.13.0+cu130, torchvision 0.28.0+cu130 and filelock 4.2.1. WSL used an isolated dependency overlay; Colab used a separately installed inference environment. See [implementation status](implementation_status.md) for the completed candidate and public-tag workflow checks. From the repository root in WSL/Linux:
 
 ```bash
 python -m venv .venv-inference
@@ -116,7 +116,7 @@ Choose `.json` or `.csv` through the output filename. CSV output includes a JSON
 
 ## Google Colab and sample images
 
-Open `examples/colab_inference.ipynb` in a fresh GPU runtime. Its default source reference is `GIT_REF = "v0.2.1"`, available after that tag is published. The notebook records the resolved commit and source identity. The pre-release Colab check used a verified archive of the same inference implementation; the final public tag checkout is a separate post-publication check.
+Open `examples/colab_inference.ipynb` in a fresh GPU runtime. Its default source reference is `GIT_REF = "v0.3.1"`. The notebook records the resolved commit and source identity. On 2026-10-28, the public tag at commit `aa1c8f4596b63bed39c53e390e67318d1836b7f7` completed paper-TTA inference and Grad-CAM on Colab/A100 with Python 3.13.16, filelock 4.2.1 and CUDA float32, using one generated 480 x 480 RGB image. Recorded source/weight identities and all nine saved files passed verification. See [implementation status](implementation_status.md) for the conditions, candidate comparison and limits of this software check.
 
 The notebook creates an inference virtual environment and uses its Python for package checks, image handling, weight downloading and inference. It does not replace the kernel's ML packages, so a kernel restart is normally unnecessary. After a manual restart, rerun from the first code cell. A failed partial environment setup is not marked ready; use a fresh runtime after an installation failure.
 

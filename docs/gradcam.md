@@ -1,10 +1,12 @@
 # Grad-CAM examples
 
-Updated 2026-10-28 (JST); documentation revision 0.1.21. Inference package 0.3.1. See [implementation status](implementation_status.md) for checks by version.
+Updated 2026-10-28 (JST); documentation revision 0.1.22. Inference package 0.3.1. See [implementation status](implementation_status.md) for checks by version.
 
 The optional Grad-CAM path adds ViT and ConvNeXtV2 visualizations after the existing prediction step. It reuses the selected safetensors and checks their identity against the prediction record. Predictions still use the requested TTA, precision and raw-logit aggregation. Grad-CAM uses a separate **unaugmented float32** forward pass and does not alter the saved prediction values.
 
-On 2026-10-28, the v0.3.1 filelock update passed a paired WSL/RTX 5090 check with exactly unchanged predictions and both maps on one generated image with paper TTA. A separate candidate Colab/A100 run produced finite 480 x 480 maps and matching rendered artifacts; it did not include a Grad-CAM-off comparison. Final public-tag Colab acquisition remains a post-publication check.
+On 2026-10-28, the v0.3.1 filelock update passed a paired WSL/RTX 5090 check with exactly unchanged predictions and both maps on one generated image with paper TTA. A separate candidate Colab/A100 run produced finite 480 x 480 maps and matching rendered artifacts; it did not include a Grad-CAM-off comparison. The completed public-tag follow-up is recorded below.
+
+On 2026-10-28, the public v0.3.1 tag at commit `aa1c8f4596b63bed39c53e390e67318d1836b7f7` completed Colab/A100 paper-TTA prediction and Grad-CAM with Python 3.13.16, filelock 4.2.1 and CUDA float32 on one generated 480 x 480 RGB image. Prediction values matched the candidate exactly. Both maps were finite, nonconstant float32 480 x 480 arrays, and each heatmap/overlay matched rendering recalculated from its own saved map. Relative to the candidate, the ViT map differed by at most `2.384185791015625e-7`; its heatmap and overlay each differed in one RGB component by one 8-bit level. ConvNeXtV2 map and PNG bytes were identical. This run did not include a paired Grad-CAM-off comparison and does not establish clinical performance or historical reader-study map equivalence. See [implementation status](implementation_status.md) for the complete conditions and evidence.
 
 ## Run
 

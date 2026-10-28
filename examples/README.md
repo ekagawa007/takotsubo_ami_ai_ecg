@@ -1,6 +1,6 @@
 # Inference examples
 
-Updated 2026-10-28 (JST); documentation revision 0.1.21. Inference package 0.3.1.
+Updated 2026-10-28 (JST); documentation revision 0.1.22. Inference package 0.3.1.
 
 The four CLIs and the English Colab notebook share the same implementation:
 
@@ -27,7 +27,7 @@ Paper defaults are ViT TTA 24/magnitude 1, ConvNeXtV2 no TTA, MLP-Mixer TTA 32/m
 
 ## Colab setup and inputs
 
-Open the [English Colab notebook](https://colab.research.google.com/github/ekagawa007/takotsubo_ami_ai_ecg/blob/main/examples/colab_inference.ipynb) in a fresh GPU runtime. The source-loading cell selects `GIT_REF = "v0.3.1"`. On 2026-10-28, the matching candidate workflow completed paper-TTA inference, Grad-CAM and nine-file ZIP saving on A100 with Python 3.13.16 and filelock 4.2.1. That run loaded a verified candidate archive; final acquisition from the public v0.3.1 tag is a separate post-publication check. The notebook records the resolved source identity and installed versions. The [v0.3.0 notebook](https://colab.research.google.com/github/ekagawa007/takotsubo_ami_ai_ecg/blob/v0.3.0/examples/colab_inference.ipynb) remains available for the archived software version.
+Open the [English Colab notebook](https://colab.research.google.com/github/ekagawa007/takotsubo_ami_ai_ecg/blob/main/examples/colab_inference.ipynb) in a fresh GPU runtime. The source-loading cell selects `GIT_REF = "v0.3.1"`. On 2026-10-28, the public tag at commit `aa1c8f4596b63bed39c53e390e67318d1836b7f7` completed paper-TTA inference, Grad-CAM and nine-file ZIP saving on A100 with Python 3.13.16 and filelock 4.2.1, using one generated 480 x 480 image. Source, selected-weight and saved-output checks passed. See [implementation status](../docs/implementation_status.md) for the separate candidate/public-tag records and prediction/map comparison. The notebook records the resolved source identity and installed versions. The [v0.3.0 notebook](https://colab.research.google.com/github/ekagawa007/takotsubo_ami_ai_ecg/blob/v0.3.0/examples/colab_inference.ipynb) remains available for the archived software version.
 
 Setup creates a separate inference virtual environment at `/content/ecg_inference_venv`. `INFERENCE_PYTHON` is used for library checks, image processing, weight downloading and inference. The kernel's existing ML packages are retained, so normally no kernel restart is required. If the kernel is restarted manually, rerun from the first code cell. An incomplete installation is not reused as a ready environment; start a fresh runtime after an installation failure.
 

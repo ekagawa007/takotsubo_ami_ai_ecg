@@ -1,10 +1,12 @@
 # Execution environments
 
-Updated 2026-10-28 (JST); documentation revision 0.1.21.
+Updated 2026-10-28 (JST); documentation revision 0.1.22.
 
 ## Tested inference environments
 
-Use the current `requirements-inference.txt` in a new environment. Keep the original training environment and its root `requirements.txt` as historical records. Version v0.3.1 explicitly pins `filelock==4.2.1`. On 2026-10-28, its candidate passed a WSL/RTX 5090 check with Python 3.12.12 and a separate Colab/A100 run with Python 3.13.16. Both used CUDA float32 and the torch 2.13.0/torchvision 0.28.0 CUDA 13.0 pair. The WSL check used an isolated filelock overlay and preserved all prediction values and both Grad-CAM maps exactly across that dependency substitution on one generated image with paper TTA (batch 1, zero workers). Colab created a separate inference environment and completed the same paper-TTA settings with batch 1 and four workers, including validated prediction/run linkage and nine output files. Its source was a verified candidate archive; final public-tag acquisition is a separate post-publication check. See [implementation status](implementation_status.md).
+Use the current `requirements-inference.txt` in a new environment. Keep the original training environment and its root `requirements.txt` as historical records. Version v0.3.1 explicitly pins `filelock==4.2.1`. On 2026-10-28, its candidate passed a WSL/RTX 5090 check with Python 3.12.12 and a separate Colab/A100 run with Python 3.13.16. Both used CUDA float32 and the torch 2.13.0/torchvision 0.28.0 CUDA 13.0 pair. The WSL check used an isolated filelock overlay and preserved all prediction values and both Grad-CAM maps exactly across that dependency substitution on one generated image with paper TTA (batch 1, zero workers). Colab created a separate inference environment and completed the same paper-TTA settings with batch 1 and four workers, including validated prediction/run linkage and nine output files. That candidate run used a verified source archive; the completed public-tag follow-up is recorded below. See [implementation status](implementation_status.md).
+
+On 2026-10-28, the public v0.3.1 tag at commit `aa1c8f4596b63bed39c53e390e67318d1836b7f7` also completed the Colab workflow on A100-SXM4-40GB with Python 3.13.16, filelock 4.2.1 and CUDA float32. It used one generated 480 x 480 RGB image, paper TTA, batch size 1, four workers and seed 1234. The public and candidate Colab runs recorded the same 57 installed package names/versions, matching input bytes and inference settings. All model/ensemble prediction values matched exactly, and source/weight/output checks passed. The [implementation status](implementation_status.md) records the small ViT map difference and the scope of this synthetic-image check.
 
 The following table retains the v0.2.1 environment and comparison record:
 
@@ -23,7 +25,7 @@ All numerical comparisons passed their stated `atol=rtol=1e-5` criterion. All mo
 
 Both the v0.2.1 public-tag workflow and the v0.3.0 public-tag workflow subsequently completed their live Colab checks. On 2026-10-24, public v0.3.0 ran on an A100 with Python 3.13.16, CUDA float32, batch size 1 and four workers, using one generated 480 x 480 RGB image and paper TTA. ViT/ConvNeXtV2 Grad-CAM, prediction/run-record linkage, source and weight identities, and the nine-file results ZIP were verified. Its main inference library versions match those listed above; this does not imply that all installed packages or runtime details were identical. The v0.3.0 candidate also passed a paired Grad-CAM off/on WSL paper-TTA check with exactly unchanged predictions on one generated image. See [implementation status](implementation_status.md) for the scoped records.
 
-The notebook uses a separate inference virtual environment and records its source commit and installed versions. The v0.3.1 candidate checks are complete as described above. They are separate from the dated v0.3.0 checks and do not establish historical stochastic-TTA equivalence.
+The notebook uses a separate inference virtual environment and records its source commit and installed versions. The v0.3.1 candidate and public-tag workflow checks are complete as described above. They are separate from the dated v0.3.0 checks and do not establish historical stochastic-TTA equivalence.
 
 ### New inference setup
 
