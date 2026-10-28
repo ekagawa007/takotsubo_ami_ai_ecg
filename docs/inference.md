@@ -1,12 +1,12 @@
 # Running inference
 
-Updated 2026-10-23 (JST); documentation revision 0.1.14. Package 0.2.1.
+Updated 2026-10-28 (JST); documentation revision 0.1.21. Inference package 0.3.1. See [implementation status](implementation_status.md) for checks by version.
 
 The new CLIs and Colab notebook share one inference implementation. The defaults record the paper's selected models, TTA counts/magnitudes, class order, and raw-logit ensemble. They do not establish that a new runtime reproduces every saved prediction; compare against the original results using the same inputs and execution settings.
 
 ## Setup
 
-Use a fresh Python 3.11+ environment. The tested WSL runtime uses Python 3.12.12 and an RTX 5090; Colab uses Python 3.13.15 and an A100. Both GPU checks used torch 2.13.0+cu130 and torchvision 0.28.0+cu130. From the repository root in WSL/Linux:
+Use a fresh Python 3.11+ environment. The tested WSL runtime uses Python 3.12.12 and an RTX 5090; The v0.3.1 candidate Colab check used Python 3.13.16 and an A100. Both GPU checks used torch 2.13.0+cu130, torchvision 0.28.0+cu130 and filelock 4.2.1. WSL used an isolated dependency overlay; Colab used a separately installed inference environment. See [implementation status](implementation_status.md) for the completed candidate checks and separate final public-tag acquisition check. From the repository root in WSL/Linux:
 
 ```bash
 python -m venv .venv-inference

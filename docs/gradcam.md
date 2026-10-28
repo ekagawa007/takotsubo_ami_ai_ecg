@@ -1,8 +1,10 @@
 # Grad-CAM examples
 
-Updated 2026-10-24 (JST). Package 0.3.0; documentation revision 0.1.18.
+Updated 2026-10-28 (JST); documentation revision 0.1.21. Inference package 0.3.1. See [implementation status](implementation_status.md) for checks by version.
 
 The optional Grad-CAM path adds ViT and ConvNeXtV2 visualizations after the existing prediction step. It reuses the selected safetensors and checks their identity against the prediction record. Predictions still use the requested TTA, precision and raw-logit aggregation. Grad-CAM uses a separate **unaugmented float32** forward pass and does not alter the saved prediction values.
+
+On 2026-10-28, the v0.3.1 filelock update passed a paired WSL/RTX 5090 check with exactly unchanged predictions and both maps on one generated image with paper TTA. A separate candidate Colab/A100 run produced finite 480 x 480 maps and matching rendered artifacts; it did not include a Grad-CAM-off comparison. Final public-tag Colab acquisition remains a post-publication check.
 
 ## Run
 

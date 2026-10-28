@@ -1,12 +1,16 @@
 # Inference validation
 
-Updated 2026-10-24 (JST); documentation revision 0.1.18.
+Updated 2026-10-28 (JST); documentation revision 0.1.21.
 
 Install the current inference dependencies, then run from the repository root:
 
 ```bash
 python -m unittest discover -s tests -p "test_*.py" -v
 ```
+
+## Maintenance release 0.3.1
+
+On 2026-10-27, the candidate passed 116 of 119 tests using the existing Windows CPU ML environment and an isolated filelock 4.2.1 overlay. Three hardlink cases were skipped, with no failures or errors. The original environment was preserved. A paired selected-weight check on one generated image with paper TTA preserved all predictions and both Grad-CAM maps exactly across the filelock substitution. Another 25 local notebook checks passed; setup, Colab APIs and GPU availability were mocked. On 2026-10-28, the WSL/RTX 5090 candidate passed 117 of 119 tests (two Windows-only tests skipped) and the same paired filelock comparison with exactly unchanged predictions and both maps. The candidate also completed a separate Colab/A100 run using Python 3.13.16, filelock 4.2.1, one generated image, paper TTA, float32, batch 1 and four workers. All 112 candidate source hashes, weight/configuration identities, prediction/run linkage and nine output files matched; numerical-map rendering was verified. The Colab run used a verified source archive and did not include a paired Grad-CAM-off comparison. Final public-tag Colab acquisition remains a post-publication check. See [implementation status](../docs/implementation_status.md).
 
 ## Grad-CAM validation for the published 0.3.0 release
 

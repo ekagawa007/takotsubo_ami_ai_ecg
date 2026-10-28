@@ -357,7 +357,7 @@ def predict(images, weights_dir="weights", model="ensemble", settings=None, chec
         }
         rows.append(row)
     versions = {"python": platform.python_version(), "package": __version__}
-    for distribution in ("torch", "torchvision", "timm", "transformers", "safetensors", "numpy", "Pillow"):
+    for distribution in ("torch", "torchvision", "timm", "transformers", "safetensors", "numpy", "Pillow", "filelock"):
         try:
             versions[distribution] = importlib.metadata.version(distribution)
         except importlib.metadata.PackageNotFoundError:

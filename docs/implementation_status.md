@@ -1,10 +1,31 @@
 # Implementation and validation status
 
-Updated 2026-10-24 (JST); documentation revision 0.1.18. Published package 0.3.0; weights 0.2.0.
+Updated 2026-10-28 (JST); documentation revision 0.1.21. Inference package 0.3.1; weights 0.2.0.
+
+## v0.3.1 maintenance release and validation
+
+Version 0.3.1 explicitly pins `filelock==4.2.1` in inference requirements and records that version in CLI and Colab output metadata. Model tensors, preprocessing, prediction calculations, TTA and Grad-CAM calculations are unchanged. Historical training requirements remain unchanged.
+
+The 2026-10-27 metadata review detected three active indexed advisories for the previously installed filelock 3.32.3: [GHSA-v4x8-3wr5-3wq8](https://github.com/tox-dev/filelock/security/advisories/GHSA-v4x8-3wr5-3wq8), [GHSA-9vhv-jxww-xfm5](https://github.com/tox-dev/filelock/security/advisories/GHSA-9vhv-jxww-xfm5), and [GHSA-567q-5qvw-pf92](https://github.com/tox-dev/filelock/security/advisories/GHSA-567q-5qvw-pf92). Upstream identifies 4.2.1 as patched. These locking scenarios require local filesystem access; a remote exploit through an ECG image was not demonstrated by this review.
+
+| Check | Environment and conditions | Verified result |
+|---|---|---|
+| CPU dependency comparison, 2026-10-27 | Windows, Python 3.13.15, torch 2.13.0+cpu / torchvision 0.28.0+cpu; isolated filelock 4.2.1 overlay over the existing ML environment | 119 tests: 116 passed, three hardlink-permission cases skipped. One generated 480 x 480 image with paper TTA and float32 preserved all model/ensemble predictions and both Grad-CAM maps exactly across the filelock substitution. Original environment preserved. |
+| WSL dependency comparison, 2026-10-28 | RTX 5090, Python 3.12.12, torch 2.13.0+cu130 / torchvision 0.28.0+cu130; filelock 3.32.3 versus isolated 4.2.1 overlay; one generated image, float32, paper TTA, batch 1, zero workers, seed 1234 | 119 tests: 117 passed, two Windows-only cases skipped, no failures/errors. All prediction values and both finite float32 480 x 480 maps were exactly unchanged. Source, weight/configuration and artifact hashes matched. Only filelock differed among 57 packages; original inventory remained unchanged. |
+| Colab candidate execution, 2026-10-28 | A100-SXM4-40GB, Python 3.13.16, separate newly installed inference environment, CUDA float32, one generated 480 x 480 image, paper TTA, batch 1, four workers, seed 1234 | Candidate archive and 112 source hashes matched; filelock 4.2.1 and all required versions were recorded. Official selected-weight/config hashes, synthetic RGB pixels, prediction/run linkage and all nine ZIP members were verified. Softmax and raw-logit aggregation were independently recalculated; both maps and their rendered pixels matched. |
+| Local notebook integration | Simulated setup, Colab APIs and GPU availability; tiny generated inputs and ZIP output cases | 25 checks passed. These mocked checks are separate from the live candidate Colab execution above. |
+
+Both GPU checks used transformers 5.10.4, timm 1.0.22, numpy 2.2.6, Pillow 13.0.0 and safetensors 0.7.0. Paper TTA means ViT 24/magnitude 1, ConvNeXtV2 1 unchanged view and MLP-Mixer 32/magnitude 3; each model's mean raw logits are combined with equal weights before softmax. The WSL overlay check is not a fresh full-environment installation. The Colab run recorded certifi 2026.10.23, whereas the earlier WSL environment used 2026.10.19; the full installed environments are not claimed to be identical.
+
+The Colab source archive SHA-256 was `9f87654d0839c9132499c6312b8341dc1d4c45c37f4a3a4ce48a7f5f1daddd9b`. The release finalization updates documentation, notebook Markdown and citation metadata. Executable source, dependencies and public notebook code cells match the tested candidate. The private candidate notebook used verified archive loading in place of the public Git checkout cell; its remaining code cells matched. The final public-tag Colab source-acquisition check remains a separate post-publication step. The candidate run did not include a paired Grad-CAM-off comparison.
+
+The 2026-10-27 PyPI metadata review of the Windows 39-package and prior WSL 57-package sets with filelock substituted found zero active indexed advisories, yanked files or lookup errors. This version-level check was not repeated merely to finalize documentation and does not cover unknown vulnerabilities, individual PyTorch wheel builds, the OS or drivers.
+
+These are software checks on generated images, not clinical validation or proof of historical stochastic-TTA/reader-study heatmap equivalence. The [software DOI](https://doi.org/10.5281/zenodo.23666137) still identifies archived v0.3.0, and the [weight DOI](https://doi.org/10.5281/zenodo.23666262) identifies v0.2.0. The v0.3.1 citation uses its GitHub Release URL until a new archive DOI is assigned. Existing tags and Zenodo records are preserved.
 
 ## Published v0.3.0 and final Colab verification
 
-The [v0.3.0 release](https://github.com/ekagawa007/takotsubo_ami_ai_ecg/releases/tag/v0.3.0) identifies commit `341ac955353f535fb74a4b6d8005a8b3b1290ad4`. Anonymous download verification matched all 111 published source files to the reviewed release. The source tag remains fixed; subsequent documentation updates describe the completed checks without changing the inference package or weights.
+The [v0.3.0 release](https://github.com/ekagawa007/takotsubo_ami_ai_ecg/releases/tag/v0.3.0) identifies commit `341ac955353f535fb74a4b6d8005a8b3b1290ad4`. Anonymous download verification matched all 111 published source files to the reviewed release. The v0.3.0 source tag remains fixed. The October 24 documentation update described the completed checks without changing that release; the v0.3.1 maintenance release is tracked separately above.
 
 On 2026-10-24, the public-tag Colab workflow completed prediction and Grad-CAM using the official v0.2.0 weights. The saved results were independently checked:
 
@@ -21,7 +42,7 @@ This public run used torch 2.13.0+cu130, torchvision 0.28.0+cu130, transformers 
 
 The public-tag Colab execution check is complete. It is a one-image software workflow check, without a paired Grad-CAM-off run in Colab. The paired prediction-preservation evidence comes from the CPU and WSL checks below. Historical stochastic TTA equivalence, historical reader-study heatmap equivalence and clinical performance are not established by this synthetic input.
 
-The current [Colab notebook](https://colab.research.google.com/github/ekagawa007/takotsubo_ami_ai_ecg/blob/main/examples/colab_inference.ipynb) includes updated validation notes while its source-loading cell retains `GIT_REF = "v0.3.0"`.
+The [published v0.3.0 Colab notebook](https://colab.research.google.com/github/ekagawa007/takotsubo_ami_ai_ecg/blob/v0.3.0/examples/colab_inference.ipynb) selects `GIT_REF = "v0.3.0"`. The maintenance notebook selects its own release version; the checks in this section describe v0.3.0.
 
 ## Grad-CAM implementation and validation
 
@@ -46,7 +67,7 @@ These are synthetic software checks. Historical reader-study heatmap equivalence
 
 ## Inherited v0.2.1 implementation
 
-The v0.2.1 inference implementation protects JSON/CSV/metadata saving, retains uncertain partial weight installations, and permits only supported single-frame raster image decoding in the initial check and workers. The current requirements pin the tested inference versions separately from the unchanged historical training requirements.
+The v0.2.1 inference implementation protects JSON/CSV/metadata saving, retains uncertain partial weight installations, and permits only supported single-frame raster image decoding in the initial check and workers. The v0.2.1 requirements pinned its tested inference versions separately from the unchanged historical training requirements.
 
 A strict compatibility adapter supports the selected ViT checkpoint with Transformers 5.10.4. It follows the documented legacy-to-modular names: 192 of 200 saved parameter keys are renamed, without changing their tensor objects or values. Missing, extra, ambiguous or shape-mismatched keys remain errors. The adapter also leaves already matching checkpoint keys unchanged. No model is retrained or re-exported for this change.
 

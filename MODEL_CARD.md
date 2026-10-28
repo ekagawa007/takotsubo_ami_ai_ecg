@@ -1,6 +1,6 @@
 # Model card: takotsubo versus AMI ECG-image models
 
-Updated 2026-10-23 (JST). Inference package `v0.2.1`; weight assets `v0.2.0`.
+Updated 2026-10-28 (JST); documentation revision 0.1.21. Inference package `v0.3.1`; weight assets `v0.2.0`. The filelock 4.2.1 maintenance update passed candidate WSL/CUDA and Colab checks on 2026-10-28; final public-tag Colab acquisition is a separate post-publication check. See [implementation status](docs/implementation_status.md).
 
 ## Task and intended use
 
@@ -12,7 +12,7 @@ The release supports research inference and reproducibility checks. Clinical dep
 
 The default input is an already prepared **480 x 480 RGB image**, supplied as a single-frame PNG, JPEG, BMP, TIFF or WebP file. The loader converts to RGB and applies the original dataset evaluators' ImageNet mean/std normalization. The optional `--input-policy resize` resizes the complete image with bilinear interpolation; it does not establish equivalence to the study's upstream ECG preparation.
 
-Outputs include two-class raw logits, probabilities, predicted classes, effective settings, checkpoint identities and hashes. The ensemble selects AMI when `prob_AMI >= 0.5`. Individual models use argmax, with an exact tie selecting tako, unless an explicit threshold is supplied. See [the inference guide](docs/inference.md).
+Outputs include two-class raw logits, probabilities, predicted classes, effective settings, checkpoint identities and hashes. Optional ViT/ConvNeXtV2 Grad-CAM maps use the unaugmented input; they do not explain the TTA-averaged ensemble or establish clinical localization accuracy. Saved input images and overlays contain the input pixels and must be handled as private outputs when real ECGs are used. See [Grad-CAM](docs/gradcam.md). The ensemble selects AMI when `prob_AMI >= 0.5`. Individual models use argmax, with an exact tie selecting tako, unless an explicit threshold is supplied. See [the inference guide](docs/inference.md).
 
 ## Selected checkpoints and default inference
 
@@ -50,11 +50,15 @@ The code is MIT licensed. Confirmed model-weight terms are separate: the ViT ass
 
 | Check | Result | Scope limit |
 |---|---|---|
+| v0.3.1 candidate WSL/RTX 5090, 2026-10-28 | 117 of 119 tests passed; two Windows-only tests skipped. Replacing filelock 3.32.3 with 4.2.1 preserved all predictions and both Grad-CAM maps exactly on one generated image with paper TTA | Isolated dependency overlay; float32, batch 1, zero workers; original environment retained |
+| v0.3.1 candidate Colab/A100, 2026-10-28 | Python 3.13.16, filelock 4.2.1, CUDA float32; paper-TTA prediction and both Grad-CAM maps completed. Source/weight identities and nine output files verified | Verified candidate archive, one generated image, batch 1, four workers; no paired Grad-CAM-off run. Public-tag acquisition remains a separate check |
 | v0.2.1 WSL/RTX 5090, Python 3.12.12, torch 2.13.0+cu130/torchvision 0.28.0+cu130 | Ten real ECG images matched frozen original-evaluator predictions at float32/no TTA; all models and the ensemble were within `atol=rtol=1e-5`, with zero class differences | The original evaluators were not rerun in the new environment; this is not a study performance estimate |
-| v0.2.1 Colab/A100, Python 3.13.15, same GPU library pair | One generated RGB image completed inference with the paper TTA settings and float32; source, weights, input identity, saved records and ensemble calculation were checked | Execution check using a reviewed pre-release source archive; final public Git-tag checkout is checked separately after publication |
+| v0.2.1 Colab/A100, Python 3.13.15, same GPU library pair | One generated RGB image completed inference with the paper TTA settings and float32; source, weights, input identity, saved records and ensemble calculation were checked | This row records the pre-release archive check; the later public-tag execution checks are complete and documented in implementation status |
+| v0.3.0 public Colab/A100, 2026-10-24, Python 3.13.16 | One generated RGB image completed paper-TTA float32 inference and ViT/ConvNeXtV2 Grad-CAM; the release commit, source/weight hashes, prediction/run linkage and nine output files were verified | One-image execution check; no paired Grad-CAM-off comparison in this Colab run and no clinical-performance claim |
+| v0.3.0 candidate WSL paper-TTA comparison | Predictions were exactly unchanged with Grad-CAM enabled or disabled on one generated image; two finite 480 x 480 maps and saved artifacts were checked | This tests the effect of optional Grad-CAM on prediction; it does not establish historical stochastic-TTA or reader-study heatmap equivalence |
 | v0.2.1 tests | WSL: 83 passed, two Windows-only cases skipped. Native Windows CPU: 83 passed, two hardlink-permission cases skipped | 85 cases discovered in each environment; skips are platform-specific |
 | CPU dependency comparisons | Ten-image no-TTA and one synthetic-image paper-TTA comparisons passed tolerance, with zero class changes | Native Windows CPU, float32, batch 1, zero workers |
-| v0.2.0 distribution | Public archive and all 11 bundled hashes verified on 2026-10-22; selected weights unchanged in v0.2.1 | Distribution integrity does not establish clinical validity |
+| v0.2.0 distribution | Public archive and all 11 bundled hashes verified on 2026-10-22; selected weights unchanged through v0.3.1 | Distribution integrity does not establish clinical validity |
 
 Current checks use Transformers 5.10.4, timm 1.0.22, numpy 2.2.6, Pillow 13.0.0 and safetensors 0.7.0. The ViT checkpoint-name adapter preserves tensor values and strict key/shape validation. Historical checkpoint identities remain the same.
 
@@ -62,4 +66,4 @@ Historical paper-TTA numerical equivalence, a complete training rerun, all-datas
 
 ## Data and citation
 
-Patient ECG images and participant records are not included. Existing private inputs support local comparison, while publicly shareable synthetic inputs can exercise the software. Use the repository and the actual release version when describing software; final publication metadata and a version-specific DOI are not asserted by this model card. The code copyright is Copyright (c) 2026 Eisuke Kagawa.
+Patient ECG images and participant records are not included. Existing private inputs support local comparison, while publicly shareable synthetic inputs can exercise the software. For software v0.3.1, use the release citation in [CITATION.cff](CITATION.cff) and the [README](README.md#how-to-cite); no v0.3.1 DOI is assigned here. The archived [code v0.3.0 DOI](https://doi.org/10.5281/zenodo.23666137) identifies that earlier software version. When using the distributed weights, also cite the separate [weights v0.2.0 DOI](https://doi.org/10.5281/zenodo.23666262). These version-specific software/model DOIs are not the journal article DOI and must not be used to identify a different version. A final journal citation can be added when available. The code copyright is Copyright (c) 2026 Eisuke Kagawa.

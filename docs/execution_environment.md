@@ -1,10 +1,12 @@
 # Execution environments
 
-Updated 2026-10-23 (JST); documentation revision 0.1.14.
+Updated 2026-10-28 (JST); documentation revision 0.1.21.
 
-## Tested inference environment for v0.2.1
+## Tested inference environments
 
-Use the current `requirements-inference.txt` in a new environment. Keep the original training environment and its root `requirements.txt` as historical records.
+Use the current `requirements-inference.txt` in a new environment. Keep the original training environment and its root `requirements.txt` as historical records. Version v0.3.1 explicitly pins `filelock==4.2.1`. On 2026-10-28, its candidate passed a WSL/RTX 5090 check with Python 3.12.12 and a separate Colab/A100 run with Python 3.13.16. Both used CUDA float32 and the torch 2.13.0/torchvision 0.28.0 CUDA 13.0 pair. The WSL check used an isolated filelock overlay and preserved all prediction values and both Grad-CAM maps exactly across that dependency substitution on one generated image with paper TTA (batch 1, zero workers). Colab created a separate inference environment and completed the same paper-TTA settings with batch 1 and four workers, including validated prediction/run linkage and nine output files. Its source was a verified candidate archive; final public-tag acquisition is a separate post-publication check. See [implementation status](implementation_status.md).
+
+The following table retains the v0.2.1 environment and comparison record:
 
 | Item | WSL GPU comparison | Colab execution | CPU development checks |
 |---|---|---|---|
@@ -19,7 +21,9 @@ Use the current `requirements-inference.txt` in a new environment. Keep the orig
 
 All numerical comparisons passed their stated `atol=rtol=1e-5` criterion. All models and the ensemble had zero class changes on the ten-image checks. Colab execution does not establish historical paper-TTA numerical equivalence. See [implementation status](implementation_status.md) for exact results and test skips.
 
-The public Colab notebook uses the same tested inference dependencies in a separate virtual environment. Its final GitHub source-checkout cell targets `v0.2.1` after publication; the tested pre-release run used a verified source archive. The final tag-based checkout remains a separate public-workflow check.
+Both the v0.2.1 public-tag workflow and the v0.3.0 public-tag workflow subsequently completed their live Colab checks. On 2026-10-24, public v0.3.0 ran on an A100 with Python 3.13.16, CUDA float32, batch size 1 and four workers, using one generated 480 x 480 RGB image and paper TTA. ViT/ConvNeXtV2 Grad-CAM, prediction/run-record linkage, source and weight identities, and the nine-file results ZIP were verified. Its main inference library versions match those listed above; this does not imply that all installed packages or runtime details were identical. The v0.3.0 candidate also passed a paired Grad-CAM off/on WSL paper-TTA check with exactly unchanged predictions on one generated image. See [implementation status](implementation_status.md) for the scoped records.
+
+The notebook uses a separate inference virtual environment and records its source commit and installed versions. The v0.3.1 candidate checks are complete as described above. They are separate from the dated v0.3.0 checks and do not establish historical stochastic-TTA equivalence.
 
 ### New inference setup
 
@@ -80,7 +84,7 @@ The repository can be stored or edited on native Windows 11. Model execution tar
 | Original dataset/CSV evaluation | Configure data and output locations | Configure data and output locations |
 | Original human-study administrator | Interactive terminal and a working graphical display required | Not a standard notebook workflow; a separate interactive UI would be needed |
 
-The table describes runtime targets for the retained code and new inference examples. The reported historical training setup is recorded above. Final weights and baseline predictions are not included in the Git repository. The v0.2.1 implementation passed the scoped WSL and Colab checks above. Full training-environment reconstruction and historical paper-TTA numerical equivalence remain separate tasks.
+The table describes runtime targets for the retained code and new inference examples. The reported historical training setup is recorded above. Final weights and baseline predictions are not included in the Git repository. The published v0.2.1 and v0.3.0 workflows passed the scoped WSL and Colab checks above. Full training-environment reconstruction and historical paper-TTA numerical equivalence remain separate tasks.
 
 ## Paths
 
