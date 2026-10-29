@@ -1,10 +1,10 @@
 # Running inference
 
-Updated 2026-10-29 (JST); documentation revision 0.1.24. Inference package 0.4.0. See [implementation status](implementation_status.md) for checks by version.
+Updated 2026-10-29 (JST); documentation revision 0.1.26. Inference package 0.4.0. See [implementation status](implementation_status.md) for checks by version.
 
 The new CLIs and Colab notebook share one inference implementation. The defaults record the paper's selected models, TTA counts/magnitudes, class order, and raw-logit ensemble. They do not establish that a new runtime reproduces every saved prediction; compare against the original results using the same inputs and execution settings.
 
-Version 0.4.0 adds the input geometry and Colab controls described in [image preparation](image_preparation.md). Candidate Colab runs completed on CPU and A100 with the conditions recorded in [implementation status](implementation_status.md#v040-image-input-and-colab-controls). The separate final public-tag acquisition and execution check remains pending.
+Version 0.4.0 adds the input geometry and Colab controls described in [image preparation](image_preparation.md). Candidate Colab runs completed on CPU and A100 with the conditions recorded in [implementation status](implementation_status.md#v040-image-input-and-colab-controls). The final public-tag acquisition and execution check completed on 2026-10-29 on A100 with one generated 480 x 480 image, paper TTA and Grad-CAM.
 
 ## Setup
 
@@ -118,7 +118,7 @@ Choose `.json` or `.csv` through the output filename. CSV output includes a JSON
 
 ## Google Colab and sample images
 
-The `examples/colab_inference.ipynb` notebook provides input, device and TTA form controls and selects the `v0.4.0` source tag. Automatic device selection prefers CUDA and displays a warning before falling back to CPU. Explicit CPU selection is also available. On 2026-10-29, candidate Colab runs completed all three input-source workflows, the three new geometry policies on uploaded test images, A100 paper-TTA inference, and CPU inference with paper TTA or no TTA. The separate final public-tag execution remains pending; earlier public v0.3.1 results remain in [implementation status](implementation_status.md).
+The `examples/colab_inference.ipynb` notebook provides input, device and TTA form controls and selects the `v0.4.0` source tag. Automatic device selection prefers CUDA and displays a warning before falling back to CPU. Explicit CPU selection is also available. On 2026-10-29, candidate Colab runs completed all three input-source workflows, the three new geometry policies on uploaded test images, A100 paper-TTA inference, and CPU inference with paper TTA or no TTA. The final public-tag workflow also completed on A100 with one generated strict480 image, paper TTA and Grad-CAM; its source/weight identities and saved outputs were verified. Detailed conditions and the separate candidate and earlier-version results are in [implementation status](implementation_status.md).
 
 The notebook selects a CPU or CUDA inference environment and uses its Python for package checks, image handling, weight downloading and inference. It retains the notebook kernel's ML packages. CPU uses float32 and defaults to zero workers. GPU unavailability does not silently change TTA. After a manual restart, rerun from the first code cell. A failed partial environment setup is not marked ready; use a fresh runtime after an installation failure.
 

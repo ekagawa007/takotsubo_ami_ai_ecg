@@ -1,6 +1,6 @@
 # Implementation and validation status
 
-Updated 2026-10-29 (JST); documentation revision 0.1.24. Inference package 0.4.0; weights 0.2.0.
+Updated 2026-10-29 (JST); documentation revision 0.1.26. Inference package 0.4.0; weights 0.2.0.
 
 ## v0.4.0 image input and Colab controls
 
@@ -29,7 +29,26 @@ All eight runs used transformers 5.10.4, timm 1.0.22, numpy 2.2.6, Pillow 13.0.0
 
 The Drive input differed from the generated CPU input; the recorded CPU/GPU runtimes and worker counts also differed. The runs do not constitute a controlled timing benchmark. The saved-file checks do not establish clinical accuracy, historical stochastic-TTA reproduction, exhaustive input/format/custom-setting coverage or reader-study visualization equivalence.
 
-Release finalization changes documentation and package/citation version metadata; computation and dependency pins remain those of the tested candidate. The private candidate notebook replaced the public Git checkout cell with verified archive loading; its remaining code cells matched the public notebook. The final live run starting from the public `v0.4.0` tag remains pending. Existing release tags and Zenodo archives are preserved; CITATION.cff identifies v0.4.0 by its release URL, while the software DOI continues to identify v0.3.0 and the weight DOI v0.2.0.
+Release finalization changes documentation and package/citation version metadata; computation and dependency pins remain those of the tested candidate. The private candidate notebook replaced the public Git checkout cell with verified archive loading; its remaining code cells matched the public notebook. The subsequent public-tag workflow completed on 2026-10-29 as recorded below. Existing release tags and Zenodo archives are preserved; CITATION.cff identifies v0.4.0 by its release URL, while the software DOI continues to identify v0.3.0 and the weight DOI v0.2.0.
+
+### Public-tag Colab execution, 2026-10-29
+
+The final workflow starting from public `v0.4.0` completed on 2026-10-29 (JST), recording commit `6a16326b761c198c11776155102dc31d1308bfeb` and package `0.4.0`. It used one generated 480 x 480 RGB PNG with `strict480`, an NVIDIA A100-SXM4-40GB, Python 3.13.16 and CUDA float32. Prediction used the paper TTA settings (ViT 24/magnitude 1, ConvNeXtV2 one unchanged view, MLP-Mixer 32/magnitude 3), equal raw-logit weights, batch size 1, four workers and seed 1234. Grad-CAM used the default individual-model targets, inference normalization and separate unaugmented float32 passes.
+
+The runtime recorded torch 2.13.0+cu130, torchvision 0.28.0+cu130, transformers 5.10.4, timm 1.0.22, numpy 2.2.6, Pillow 13.0.0, safetensors 0.7.0 and filelock 4.2.1. All 21 recorded inference-source hashes matched the public release; the three official checkpoint hashes and ViT configuration hash also matched. The downloaded nine-file ZIP contained two linked JSONs, five PNGs and two NPY arrays. Input pixels, per-model softmax, raw-logit aggregation, the ensemble decision, artifact hashes/sizes, and map rendering were verified. Both maps were finite float32 480 x 480 arrays.
+
+Comparison with the saved candidate A100 run used matching input, inference settings, selected weights and numerical-library versions:
+
+| Output | Public-tag versus candidate result |
+|---|---|
+| Three models and ensemble | All logits and probabilities matched exactly; classification was unchanged. |
+| ConvNeXtV2 numerical map | Matched exactly. |
+| ViT numerical map | Maximum absolute difference `2.384185791015625e-7`; mean absolute difference `1.1659117010114844e-8`. |
+| Both models' heatmaps and overlays | Saved PNG pixels matched exactly. |
+
+This completes the public-tag workflow check for the stated synthetic input. It did not rerun the test suite or include a paired Grad-CAM-off comparison. The broader input/CPU/geometry coverage remains the candidate evidence above. These checks do not establish clinical performance, historical stochastic-TTA reproduction or reader-study visualization equivalence.
+
+This follow-up is recorded on the default branch. The immutable `v0.4.0` tag, its archived notebook and the published Release body retain their original release-time wording; the tag is not moved to update documentation. Existing Zenodo records and weight assets are also preserved.
 
 ## v0.3.1 maintenance release and validation
 

@@ -1,6 +1,6 @@
 # Inference validation
 
-Updated 2026-10-29 (JST); documentation revision 0.1.25.
+Updated 2026-10-29 (JST); documentation revision 0.1.26.
 
 Install the current inference dependencies, then run from the repository root:
 
@@ -12,7 +12,7 @@ python -m unittest discover -s tests -p "test_*.py" -v
 
 On 2026-10-29 (JST), the candidate and finalized v0.4.0 source each completed the local Windows CPU suite: **172 tests, 169 passed, three hardlink cases skipped, zero failures/errors**. These counts describe the source before the subsequent notebook/document cleanup. The checks used the existing Python 3.13.15 CPU environment and an isolated filelock 4.2.1 overlay, not a fresh Colab installation.
 
-Separate selected-weight checks preserved all model/ensemble prediction values, prepared pixels and both Grad-CAM maps exactly for one generated 480 x 480 image with paper TTA. Each new image policy (`square-resize`, `center-crop`, `pad`) also matched an independently prepared input in a ViT/no-TTA comparison. The candidate completed eight Colab runs covering generated images, computer uploads, Google Drive, A100 paper TTA, and CPU paper/no-TTA inference. Saved source/weight identities and output artifacts were verified. The final live run starting from the public `v0.4.0` tag remains pending. Full conditions and limits are in [implementation status](../docs/implementation_status.md#v040-image-input-and-colab-controls).
+Separate selected-weight checks preserved all model/ensemble prediction values, prepared pixels and both Grad-CAM maps exactly for one generated 480 x 480 image with paper TTA. Each new image policy (`square-resize`, `center-crop`, `pad`) also matched an independently prepared input in a ViT/no-TTA comparison. The candidate completed eight Colab runs covering generated images, computer uploads, Google Drive, A100 paper TTA, and CPU paper/no-TTA inference. Saved source/weight identities and output artifacts were verified. The final live public `v0.4.0` workflow completed on 2026-10-29 on A100 with one generated strict480 image, CUDA float32, paper TTA and Grad-CAM. All 21 recorded source hashes, official weight/configuration identities and nine output files were verified. Model/ensemble predictions exactly matched the candidate; the ConvNeXtV2 map matched exactly and the ViT map differed by at most `2.384185791015625e-7`, with identical heatmap/overlay pixels for both models. This saved-output check did not rerun the test suite or include a paired Grad-CAM-off comparison. Full conditions and limits are in [implementation status](../docs/implementation_status.md#v040-image-input-and-colab-controls).
 
 Notebook state-guard and integrity tests use the canonical `examples/colab_inference.ipynb`. The current source tree keeps that single notebook; the root duplicate and its equality test have been removed. Historical training/evaluation notebook cleanup removes display metadata only and does not change their cell sources or establish that those training workflows have been rerun.
 

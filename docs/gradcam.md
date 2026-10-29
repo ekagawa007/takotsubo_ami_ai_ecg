@@ -1,6 +1,6 @@
 # Grad-CAM examples
 
-Updated 2026-10-29 (JST); documentation revision 0.1.24. Inference package 0.4.0. See [implementation status](implementation_status.md) for checks by version.
+Updated 2026-10-29 (JST); documentation revision 0.1.26. Inference package 0.4.0. See [implementation status](implementation_status.md) for checks by version.
 
 The optional Grad-CAM path adds ViT and ConvNeXtV2 visualizations after the existing prediction step. It reuses the selected safetensors and checks their identity against the prediction record. Predictions still use the requested TTA, precision and raw-logit aggregation. Grad-CAM uses a separate **unaugmented float32** forward pass and does not alter the saved prediction values.
 
@@ -20,7 +20,7 @@ python examples/predict_ensemble.py \
 
 The same flag is available in `predict_vit.py` and `predict_convnextv2.py`. There is no MLP-Mixer or averaged ensemble heatmap in this release. The archived reader-study workflow used separate ViT and ConvNeXtV2 maps; the new interface follows that scope.
 
-The English Colab notebook keeps `ENABLE_GRADCAM = True` by default and displays the prepared input, each selected model's heatmap and its overlay directly in the notebook. It exposes `CAM_TARGET`, `CAM_NORMALIZATION` and `CAM_OPACITY`. Set `ENABLE_GRADCAM = False` for prediction only, including MLP-Mixer alone. The source-loading cell selects `v0.4.0`. Candidate Colab CPU/A100 execution and saved-artifact verification completed on 2026-10-29; the separate final public-tag run remains pending. See [the v0.4.0 validation scope](implementation_status.md#v040-image-input-and-colab-controls).
+The English Colab notebook keeps `ENABLE_GRADCAM = True` by default and displays the prepared input, each selected model's heatmap and its overlay directly in the notebook. It exposes `CAM_TARGET`, `CAM_NORMALIZATION` and `CAM_OPACITY`. Set `ENABLE_GRADCAM = False` for prediction only, including MLP-Mixer alone. The source-loading cell selects `v0.4.0`. Candidate Colab CPU/A100 checks and the final public-tag A100 run completed on 2026-10-29. The public run used one generated strict480 image and paper TTA; its predictions exactly matched the saved candidate. The ConvNeXtV2 map matched exactly, while the ViT map differed by at most `2.384185791015625e-7`; both models' heatmap and overlay pixels were identical. This public run did not include a paired Grad-CAM-off comparison. See [the v0.4.0 validation scope](implementation_status.md#v040-image-input-and-colab-controls).
 
 ## Target and preprocessing
 

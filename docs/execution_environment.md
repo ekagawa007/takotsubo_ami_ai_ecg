@@ -1,8 +1,10 @@
 # Execution environments
 
-Updated 2026-10-28 (JST); documentation revision 0.1.22.
+Updated 2026-10-29 (JST); documentation revision 0.1.26.
 
 ## Tested inference environments
+
+On 2026-10-29, the public `v0.4.0` tag completed Colab/A100-SXM4-40GB inference and Grad-CAM with Python 3.13.16, torch 2.13.0+cu130, torchvision 0.28.0+cu130, transformers 5.10.4, timm 1.0.22, numpy 2.2.6, Pillow 13.0.0, safetensors 0.7.0 and filelock 4.2.1. The run used one generated 480 x 480 RGB image, strict480, CUDA float32, paper TTA, batch size 1, four workers and seed 1234. Recorded source/weight identities and all nine result files were verified. See [the public-tag record](implementation_status.md#public-tag-colab-execution-2026-10-29) for exact prediction agreement, map differences and limits; broader CPU/input-option coverage comes from separate candidate runs.
 
 Use the current `requirements-inference.txt` in a new environment. Keep the original training environment and its root `requirements.txt` as historical records. Version v0.3.1 explicitly pins `filelock==4.2.1`. On 2026-10-28, its candidate passed a WSL/RTX 5090 check with Python 3.12.12 and a separate Colab/A100 run with Python 3.13.16. Both used CUDA float32 and the torch 2.13.0/torchvision 0.28.0 CUDA 13.0 pair. The WSL check used an isolated filelock overlay and preserved all prediction values and both Grad-CAM maps exactly across that dependency substitution on one generated image with paper TTA (batch 1, zero workers). Colab created a separate inference environment and completed the same paper-TTA settings with batch 1 and four workers, including validated prediction/run linkage and nine output files. That candidate run used a verified source archive; the completed public-tag follow-up is recorded below. See [implementation status](implementation_status.md).
 

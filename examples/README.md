@@ -1,6 +1,6 @@
 # Inference examples
 
-Updated 2026-10-29 (JST); documentation revision 0.1.24. Inference package 0.4.0.
+Updated 2026-10-29 (JST); documentation revision 0.1.26. Inference package 0.4.0.
 
 The four CLIs and the English Colab notebook share the same implementation:
 
@@ -27,7 +27,7 @@ Paper defaults are ViT TTA 24/magnitude 1, ConvNeXtV2 no TTA, MLP-Mixer TTA 32/m
 
 ## Colab setup and inputs
 
-Open the [v0.4.0 Colab notebook](https://colab.research.google.com/github/ekagawa007/takotsubo_ami_ai_ecg/blob/v0.4.0/examples/colab_inference.ipynb); its source-loading cell selects `v0.4.0`. On 2026-10-29, the prepared candidate completed eight Colab runs covering all three image sources, uploaded-image geometry options, A100 paper TTA and CPU paper/no-TTA inference with Grad-CAM. The separate final run starting from the public tag remains pending. See [implementation status](../docs/implementation_status.md#v040-image-input-and-colab-controls).
+Open the [v0.4.0 Colab notebook](https://colab.research.google.com/github/ekagawa007/takotsubo_ami_ai_ecg/blob/v0.4.0/examples/colab_inference.ipynb); its source-loading cell selects `v0.4.0`. On 2026-10-29, the prepared candidate completed eight Colab runs covering all three image sources, uploaded-image geometry options, A100 paper TTA and CPU paper/no-TTA inference with Grad-CAM. The final public-tag workflow also completed on 2026-10-29 on A100 with one generated 480 x 480 image, paper TTA and Grad-CAM. Source/weight identities and the nine-file result ZIP were verified; all model and ensemble prediction values matched the corresponding candidate run exactly. See [implementation status](../docs/implementation_status.md#v040-image-input-and-colab-controls).
 
 Use the form controls in order:
 
