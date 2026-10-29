@@ -1,6 +1,6 @@
 # mlpmixer: ft_3_class
 
-These files retain the supplied filenames and formats. Public copies generalize personal paths and examples; their original/current hashes and any edits are recorded in the repository source mapping.
+These files retain the supplied filenames and formats. Public copies generalize personal paths and examples. Source provenance and edit records are maintained privately; they are not included in this repository.
 
 ## Retained files
 

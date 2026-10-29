@@ -11,7 +11,7 @@ import unittest
 
 
 ROOT = Path(__file__).resolve().parents[1]
-NOTEBOOK = ROOT / "colab_inference.ipynb"
+NOTEBOOK = ROOT / "examples" / "colab_inference.ipynb"
 
 
 def notebook_cells():
@@ -52,9 +52,6 @@ class NotebookIntegrityTests(unittest.TestCase):
             if cell["cell_type"] == "code":
                 with self.subTest(cell=index):
                     compile("".join(cell["source"]), f"colab cell {index}", "exec")
-
-    def test_root_and_examples_notebooks_are_identical(self):
-        self.assertEqual(NOTEBOOK.read_bytes(), (ROOT / "examples" / "colab_inference.ipynb").read_bytes())
 
     def test_published_notebook_contains_no_execution_records(self):
         for index, cell in enumerate(notebook_cells()):

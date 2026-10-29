@@ -1,6 +1,6 @@
 # takotsubo_ami_ai_ecg
 
-**Documentation version:** `0.1.24`
+**Documentation version:** `0.1.25`
 
 **Inference package version:** `0.4.0`
 
@@ -50,7 +50,7 @@ The original training, evaluation and human-study sources retain the supplied le
 | `evaluation/original/` | Original single-image inference, dataset evaluation, and ensemble scripts |
 | `human_test/` | Original study preparation, randomization, and administration scripts |
 | `src/takotsubo_ami_ai_ecg/` | Shared public inference implementation |
-| `examples/` | Three per-model CLIs, an ensemble CLI, and a Colab notebook |
+| `examples/` | Three per-model CLIs, an ensemble CLI, and the canonical `colab_inference.ipynb` notebook |
 | `configs/` | Paper inference settings |
 | `tests/` | Inference validation checks and guidance |
 | `weights/` | Local model/configuration files; model binaries are not committed |
@@ -152,7 +152,7 @@ Code and documentation are available in the [GitHub repository](https://github.c
 
 ## License and citation
 
-The code is licensed under the [MIT License](LICENSE). Copyright (c) 2026 Eisuke Kagawa. External libraries retain their respective licenses. Model binaries are supplied separately from the Git source tree. Weight terms are documented in [WEIGHTS_LICENSE.md](WEIGHTS_LICENSE.md): the complete bundle includes the ViT noncommercial condition. The code's MIT License does not remove those separate terms. The complete paper author list and final paper metadata remain to be confirmed. See the [publication and licensing plan](docs/publication_plan_ja.md).
+The code is licensed under the [MIT License](LICENSE). Copyright (c) 2026 Eisuke Kagawa. External libraries retain their respective licenses. Model binaries are supplied separately from the Git source tree. Weight terms are documented in [WEIGHTS_LICENSE.md](WEIGHTS_LICENSE.md): the complete bundle includes the ViT noncommercial condition. The code's MIT License does not remove those separate terms. The complete paper author list and final paper metadata remain to be confirmed. See [implementation and validation status](docs/implementation_status.md) and the [upstream notices](THIRD_PARTY_NOTICES.md).
 
 ### How to cite
 
@@ -197,7 +197,7 @@ Kagawa, E. (2026). *takotsubo_ami_ai_ecg: trained ViT, ConvNeXtV2 and MLP-Mixer 
 
 The software DOI identifies the source at the original v0.3.0 commit `341ac955353f535fb74a4b6d8005a8b3b1290ad4`. The citation file and subsequent documentation updates are maintained on the default branch; the archived source remains that release snapshot. The software's first release date is 2026-10-23, and the weights' first release date is 2026-10-22. Both Zenodo records were published on 2026-10-27. Weight use remains subject to the model-specific terms in [WEIGHTS_LICENSE.md](WEIGHTS_LICENSE.md).
 
-Documentation version `0.1.24` identifies this README revision; `0.4.0` identifies the current inference software, and `0.3.0` remains the Zenodo-archived software version. CITATION.cff identifies v0.4.0 by its release URL and separately references the archived software and weights. No new Zenodo DOI is assigned to v0.4.0 here. The weights retain version `0.2.0`. Published release [v0.1.1](https://github.com/ekagawa007/takotsubo_ami_ai_ecg/releases/tag/v0.1.1), commit `70ae84ce96bf939ef117b6d2924318aef8716b81`, identifies the requirements-containing source release. It does not include this later inference revision. Existing release tags are retained.
+Documentation version `0.1.25` identifies this README revision; `0.4.0` identifies the current inference software, and `0.3.0` remains the Zenodo-archived software version. CITATION.cff identifies v0.4.0 by its release URL and separately references the archived software and weights. No new Zenodo DOI is assigned to v0.4.0 here. The weights retain version `0.2.0`. Published release [v0.1.1](https://github.com/ekagawa007/takotsubo_ami_ai_ecg/releases/tag/v0.1.1), commit `70ae84ce96bf939ef117b6d2924318aef8716b81`, identifies the requirements-containing source release. It does not include this later inference revision. Existing release tags are retained.
 
 ## Revision history
 
@@ -205,6 +205,7 @@ Documentation versions track README revisions. Update the version/date above and
 
 | Date (JST) | Documentation version | Changes |
 |---|---|---|
+| 2026-10-29 | 0.1.25 | Consolidated the Colab notebook under examples/, removed duplicate/internal preparation documents from the current source tree, and removed obsolete display metadata from historical notebooks without changing their cell sources. Updated notebook-test references, training provenance wording and published-weight guidance. Existing tags, software version, model weights and runtime code are unchanged. |
 | 2026-10-29 | 0.1.24 | Finalized v0.4.0 and its citation; recorded eight candidate Colab runs covering all three input sources, GPU paper-TTA execution, square resizing/cropping/padding and CPU paper/no-TTA execution. Clarified rerunning the settings cell after changing forms. Retained version-specific Zenodo records and separated the pending final public-tag check. |
 | 2026-10-29 | 0.1.23 | Documented the 0.4.0.dev0 input/usability candidate: square resizing, center cropping, white padding, Colab input selection and preview, CPU fallback, and selectable TTA. Preserved the strict480/paper defaults and historical records; recorded local CPU tests and exact prediction/Grad-CAM comparisons, with live Colab validation pending. |
 | 2026-10-28 | 0.1.22 | Recorded completed public-tag v0.3.1 Colab/A100 inference and Grad-CAM, source/weight/output checks and comparison with the candidate. Updated current validation explanations and notebook Markdown only; executable code, notebook code cells, dependencies, weights and release tags are unchanged. |
