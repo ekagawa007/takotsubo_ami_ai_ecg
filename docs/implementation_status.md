@@ -1,6 +1,6 @@
 # Implementation and validation status
 
-Updated 2026-10-29 (JST); documentation revision 0.1.26. Inference package 0.4.0; weights 0.2.0.
+Updated 2026-10-29 (JST); documentation revision 0.1.27. Inference package 0.4.0; weights 0.2.0.
 
 ## v0.4.0 image input and Colab controls
 
@@ -29,7 +29,7 @@ All eight runs used transformers 5.10.4, timm 1.0.22, numpy 2.2.6, Pillow 13.0.0
 
 The Drive input differed from the generated CPU input; the recorded CPU/GPU runtimes and worker counts also differed. The runs do not constitute a controlled timing benchmark. The saved-file checks do not establish clinical accuracy, historical stochastic-TTA reproduction, exhaustive input/format/custom-setting coverage or reader-study visualization equivalence.
 
-Release finalization changes documentation and package/citation version metadata; computation and dependency pins remain those of the tested candidate. The private candidate notebook replaced the public Git checkout cell with verified archive loading; its remaining code cells matched the public notebook. The subsequent public-tag workflow completed on 2026-10-29 as recorded below. Existing release tags and Zenodo archives are preserved; CITATION.cff identifies v0.4.0 by its release URL, while the software DOI continues to identify v0.3.0 and the weight DOI v0.2.0.
+Release finalization changes documentation and package/citation version metadata; computation and dependency pins remain those of the tested candidate. The private candidate notebook replaced the public Git checkout cell with verified archive loading; its remaining code cells matched the public notebook. The subsequent public-tag workflow completed on 2026-10-29 as recorded below. Existing release tags and archives are preserved. CITATION.cff now identifies v0.4.0 by its [Zenodo version DOI](https://doi.org/10.5281/zenodo.23763944), published on 2026-10-29; the earlier v0.3.0 DOI and the weight v0.2.0 DOI continue to identify their original versions.
 
 ### Public-tag Colab execution, 2026-10-29
 
@@ -49,6 +49,10 @@ Comparison with the saved candidate A100 run used matching input, inference sett
 This completes the public-tag workflow check for the stated synthetic input. It did not rerun the test suite or include a paired Grad-CAM-off comparison. The broader input/CPU/geometry coverage remains the candidate evidence above. These checks do not establish clinical performance, historical stochastic-TTA reproduction or reader-study visualization equivalence.
 
 This follow-up is recorded on the default branch. The immutable `v0.4.0` tag, its archived notebook and the published Release body retain their original release-time wording; the tag is not moved to update documentation. Existing Zenodo records and weight assets are also preserved.
+
+### Zenodo archive, 2026-10-29
+
+The [v0.4.0 source record](https://doi.org/10.5281/zenodo.23763944) is a new version in the existing software series. Its source ZIP preserves commit `6a16326b761c198c11776155102dc31d1308bfeb`, including the original tag's file layout and publication-time documents. Anonymous download verification matched all 119 source files and the 749,434-byte archive (SHA-256 `567fab264bd75dec77279af54ce5a8f7077e0be7516551f956240bbc915068a1`). Later default-branch documentation and layout changes are separate from this snapshot. The record references the unchanged [v0.2.0 weights](https://doi.org/10.5281/zenodo.23666262) and is linked to the [medRxiv preprint](https://doi.org/10.64898/2026.10.15.26365116). This archival/citation update adds no new runtime or clinical validation.
 
 ## v0.3.1 maintenance release and validation
 
@@ -70,7 +74,7 @@ The Colab source archive SHA-256 was `9f87654d0839c9132499c6312b8341dc1d4c45c37f
 
 The 2026-10-27 PyPI metadata review of the Windows 39-package and prior WSL 57-package sets with filelock substituted found zero active indexed advisories, yanked files or lookup errors. This version-level check was not repeated merely to finalize documentation and does not cover unknown vulnerabilities, individual PyTorch wheel builds, the OS or drivers.
 
-These are software checks on generated images, not clinical validation or proof of historical stochastic-TTA/reader-study heatmap equivalence. The [software DOI](https://doi.org/10.5281/zenodo.23666137) still identifies archived v0.3.0, and the [weight DOI](https://doi.org/10.5281/zenodo.23666262) identifies v0.2.0. The v0.3.1 citation uses its GitHub Release URL until a new archive DOI is assigned. Existing tags and Zenodo records are preserved.
+These are software checks on generated images, not clinical validation or proof of historical stochastic-TTA/reader-study heatmap equivalence. At the v0.3.1 release, the [software DOI](https://doi.org/10.5281/zenodo.23666137) identified archived v0.3.0, and the [weight DOI](https://doi.org/10.5281/zenodo.23666262) identified v0.2.0. Those version-specific identities are unchanged. The v0.3.1 citation uses its GitHub Release URL; the later v0.4.0 DOI above does not identify v0.3.1. Existing tags and Zenodo records are preserved.
 
 ## Published v0.3.1 and final Colab verification
 

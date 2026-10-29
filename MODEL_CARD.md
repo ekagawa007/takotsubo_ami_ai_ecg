@@ -1,6 +1,6 @@
 # Model card: takotsubo versus AMI ECG-image models
 
-Updated 2026-10-28 (JST); documentation revision 0.1.22. Inference package `v0.3.1`; weight assets `v0.2.0`. The filelock 4.2.1 maintenance update passed candidate WSL/CUDA and Colab checks on 2026-10-28. The public v0.3.1 tag subsequently completed the Colab workflow on the same date, with verified source, weight and output identities. See [implementation status](docs/implementation_status.md).
+Updated 2026-10-29 (JST); citation documentation revision 0.1.27. This card retains the `v0.3.1` baseline validation below for unchanged weight assets `v0.2.0`; the current software citation is `v0.4.0`. The filelock 4.2.1 maintenance update passed candidate WSL/CUDA and Colab checks on 2026-10-28. The public v0.3.1 tag subsequently completed the Colab workflow on the same date, with verified source, weight and output identities. See [implementation status](docs/implementation_status.md).
 
 ## Task and intended use
 
@@ -10,7 +10,7 @@ The release supports research inference and reproducibility checks. Clinical dep
 
 ## Inputs and outputs
 
-The default input is an already prepared **480 x 480 RGB image**, supplied as a single-frame PNG, JPEG, BMP, TIFF or WebP file. The loader converts to RGB and applies the original dataset evaluators' ImageNet mean/std normalization. The optional `--input-policy resize` resizes the complete image with bilinear interpolation; it does not establish equivalence to the study's upstream ECG preparation.
+The default input is an already prepared **480 x 480 RGB image**, supplied as a single-frame PNG, JPEG, BMP, TIFF or WebP file. The loader converts to RGB and applies the original dataset evaluators' ImageNet mean/std normalization. The optional `--input-policy resize` resizes the complete image with bilinear interpolation; it does not establish equivalence to the study's upstream ECG preparation. Version 0.4.0 also provides square resizing, center cropping and white padding; see [current image preparation and Colab controls](docs/image_preparation.md).
 
 Outputs include two-class raw logits, probabilities, predicted classes, effective settings, checkpoint identities and hashes. Optional ViT/ConvNeXtV2 Grad-CAM maps use the unaugmented input; they do not explain the TTA-averaged ensemble or establish clinical localization accuracy. Saved input images and overlays contain the input pixels and must be handled as private outputs when real ECGs are used. See [Grad-CAM](docs/gradcam.md). The ensemble selects AMI when `prob_AMI >= 0.5`. Individual models use argmax, with an exact tie selecting tako, unless an explicit threshold is supplied. See [the inference guide](docs/inference.md).
 
@@ -24,7 +24,7 @@ Outputs include two-class raw logits, probabilities, predicted classes, effectiv
 
 TTA counts include the unchanged image. Each model averages its raw logits across its views. The ensemble gives the three models equal weight, averages their raw logits and then applies softmax. It does not average model probabilities. ConvNeXtV2 `swa_best.pth` and the checkpoint's SWA state are not used in this default inference path.
 
-The defaults are float32, seed 1234, batch size 1 and four workers. Device selection is automatic unless explicitly set. TTA realizations depend on image order, dataset size, workers, numerical precision and software versions; identical seeds alone do not establish historical prediction equivalence.
+The CLI defaults are float32, seed 1234, batch size 1 and four workers. Current Colab CPU execution selects zero workers. Device selection is automatic unless explicitly set. TTA realizations depend on image order, dataset size, workers, numerical precision and software versions; identical seeds alone do not establish historical prediction equivalence.
 
 ## Training provenance and selection
 
@@ -61,10 +61,10 @@ The code is MIT licensed. Confirmed model-weight terms are separate: the ViT ass
 | CPU dependency comparisons | Ten-image no-TTA and one synthetic-image paper-TTA comparisons passed tolerance, with zero class changes | Native Windows CPU, float32, batch 1, zero workers |
 | v0.2.0 distribution | Public archive and all 11 bundled hashes verified on 2026-10-22; selected weights unchanged through v0.3.1 | Distribution integrity does not establish clinical validity |
 
-Current checks use Transformers 5.10.4, timm 1.0.22, numpy 2.2.6, Pillow 13.0.0 and safetensors 0.7.0. The ViT checkpoint-name adapter preserves tensor values and strict key/shape validation. Historical checkpoint identities remain the same.
+The listed baseline checks use Transformers 5.10.4, timm 1.0.22, numpy 2.2.6, Pillow 13.0.0 and safetensors 0.7.0. The ViT checkpoint-name adapter preserves tensor values and strict key/shape validation. Historical checkpoint identities remain the same.
 
 Historical paper-TTA numerical equivalence, a complete training rerun, all-dataset evaluation reproduction and human-study runtime validation remain incomplete. No diagnostic performance metric is inferred from these execution checks. The latest detailed record and earlier version history are in [implementation status](docs/implementation_status.md).
 
 ## Data and citation
 
-Patient ECG images and participant records are not included. Existing private inputs support local comparison, while publicly shareable synthetic inputs can exercise the software. For software v0.3.1, use the release citation in [CITATION.cff](CITATION.cff) and the [README](README.md#how-to-cite); no v0.3.1 DOI is assigned here. The archived [code v0.3.0 DOI](https://doi.org/10.5281/zenodo.23666137) identifies that earlier software version. When using the distributed weights, also cite the separate [weights v0.2.0 DOI](https://doi.org/10.5281/zenodo.23666262). These version-specific software/model DOIs are not the journal article DOI and must not be used to identify a different version. A final journal citation can be added when available. The code copyright is Copyright (c) 2026 Eisuke Kagawa.
+Patient ECG images and participant records are not included. Existing private inputs support local comparison, while publicly shareable synthetic inputs can exercise the software. For current software v0.4.0, cite [10.5281/zenodo.23763944](https://doi.org/10.5281/zenodo.23763944), as recorded in [CITATION.cff](CITATION.cff) and the [README](README.md#how-to-cite). The archived [code v0.3.0 DOI](https://doi.org/10.5281/zenodo.23666137) identifies that earlier software version; v0.3.1 remains identified by its [GitHub Release](https://github.com/ekagawa007/takotsubo_ami_ai_ecg/releases/tag/v0.3.1). When using the distributed weights, also cite the separate [weights v0.2.0 DOI](https://doi.org/10.5281/zenodo.23666262). These version-specific software/model DOIs are not the journal article DOI and must not be used to identify a different version. A final journal citation can be added when available. The code copyright is Copyright (c) 2026 Eisuke Kagawa.
