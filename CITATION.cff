@@ -7,10 +7,10 @@ authors:
     given-names: "Eisuke"
     affiliation: "Hiroshima North Medical Center Asa Citizens Hospital"
     orcid: "https://orcid.org/0000-0002-5583-3152"
-version: "0.3.1"
-date-released: "2026-10-28"
+version: "0.4.0"
+date-released: "2026-10-29"
 repository-code: "https://github.com/ekagawa007/takotsubo_ami_ai_ecg"
-url: "https://github.com/ekagawa007/takotsubo_ami_ai_ecg/releases/tag/v0.3.1"
+url: "https://github.com/ekagawa007/takotsubo_ami_ai_ecg/releases/tag/v0.4.0"
 license: MIT
 references:
   - type: software

@@ -1,6 +1,6 @@
 # Inference examples
 
-Updated 2026-10-28 (JST); documentation revision 0.1.22. Inference package 0.3.1.
+Updated 2026-10-29 (JST); documentation revision 0.1.24. Inference package 0.4.0.
 
 The four CLIs and the English Colab notebook share the same implementation:
 
@@ -27,19 +27,21 @@ Paper defaults are ViT TTA 24/magnitude 1, ConvNeXtV2 no TTA, MLP-Mixer TTA 32/m
 
 ## Colab setup and inputs
 
-Open the [English Colab notebook](https://colab.research.google.com/github/ekagawa007/takotsubo_ami_ai_ecg/blob/main/examples/colab_inference.ipynb) in a fresh GPU runtime. The source-loading cell selects `GIT_REF = "v0.3.1"`. On 2026-10-28, the public tag at commit `aa1c8f4596b63bed39c53e390e67318d1836b7f7` completed paper-TTA inference, Grad-CAM and nine-file ZIP saving on A100 with Python 3.13.16 and filelock 4.2.1, using one generated 480 x 480 image. Source, selected-weight and saved-output checks passed. See [implementation status](../docs/implementation_status.md) for the separate candidate/public-tag records and prediction/map comparison. The notebook records the resolved source identity and installed versions. The [v0.3.0 notebook](https://colab.research.google.com/github/ekagawa007/takotsubo_ami_ai_ecg/blob/v0.3.0/examples/colab_inference.ipynb) remains available for the archived software version.
+Open the [v0.4.0 Colab notebook](https://colab.research.google.com/github/ekagawa007/takotsubo_ami_ai_ecg/blob/v0.4.0/examples/colab_inference.ipynb); its source-loading cell selects `v0.4.0`. On 2026-10-29, the prepared candidate completed eight Colab runs covering all three image sources, uploaded-image geometry options, A100 paper TTA and CPU paper/no-TTA inference with Grad-CAM. The separate final run starting from the public tag remains pending. See [implementation status](../docs/implementation_status.md#v040-image-input-and-colab-controls).
 
-Setup creates a separate inference virtual environment at `/content/ecg_inference_venv`. `INFERENCE_PYTHON` is used for library checks, image processing, weight downloading and inference. The kernel's existing ML packages are retained, so normally no kernel restart is required. If the kernel is restarted manually, rerun from the first code cell. An incomplete installation is not reused as a ready environment; start a fresh runtime after an installation failure.
+Use the form controls in order:
 
-The default `INPUT_SOURCE = "synthetic"` generates a 480 x 480 RGB trace for a software execution check. To use an existing image:
+1. Choose automatic device selection, GPU or CPU. Automatic selection prefers an available GPU and warns before CPU fallback. Setup creates the corresponding separate inference environment; CPU uses float32 and defaults to zero workers.
+2. Prepare the official weights, or select existing local weights. Connect Drive when using Drive-hosted weights.
+3. Choose Synthetic example, Upload from computer or Google Drive. Upload one permitted image, or connect Drive and enter its path. Originals are unchanged.
+4. Choose the input policy and run input preparation. Inspect the prepared image preview and its dimensions before inference.
+5. Choose Paper, No TTA or Custom, then execute **Select the model, TTA and Grad-CAM** and check its printed settings before inference. Paper retains ViT 24/magnitude 1, ConvNeXtV2 1 and MLP-Mixer 32/magnitude 3 on either device; No TTA must show one view for every model. CPU fallback never reduces TTA automatically.
 
-1. Set `INPUT_SOURCE = "file"`.
-2. Set `USER_IMAGE_PATH` to your permitted image, for example `/content/drive/MyDrive/ecg_inference/data/example.png`.
-3. Set `USE_GOOGLE_DRIVE = True` if that path requires Drive, then execute the Drive cell before preparing inputs or local weights.
+Image policy defaults to `strict480`. Optional `square-resize`, `center-crop` and white `pad` policies support other dimensions; legacy `resize` retains full-image stretching. See [input geometry and examples](../docs/image_preparation.md) for exact cropping/padding rules and their limits. Custom TTA counts include the unchanged view and must be at least 1; magnitudes range from 0 to 9. Magnitude changes augmentation strength, while reducing view counts reduces repeated inference work.
 
-`IMAGE_PATH` is derived from the selected mode. The generator does not overwrite a supplied image. A generated trace has no diagnostic interpretation and does not validate classification performance.
+The notebook uses the dedicated `INFERENCE_PYTHON` for image decoding/preparation, downloading and inference. The kernel's existing ML packages are retained. Rerun setup after a manual restart; an incomplete environment is not reused as ready. An input-selection failure or cancellation invalidates pending input/results, so an older image is not silently substituted. Drive image loading and Drive-hosted weight loading are independent choices.
 
-The default `WEIGHT_SOURCE = "release"` downloads the v0.2.0 assets outside the checkout. To use assets already present in the runtime or Drive, choose `WEIGHT_SOURCE = "local"` and configure `WEIGHTS_DIR`. Drive mounting is optional and explicit. Weight-preparation failure stops the workflow before inference.
+The default `WEIGHT_SOURCE = "release"` downloads the v0.2.0 assets outside the checkout. `WEIGHT_SOURCE = "local"` uses existing files in `WEIGHTS_DIR`. Weight-preparation failure stops inference. A generated trace is an execution check, not a clinical prediction example.
 
 ## Progress and saved results
 
@@ -54,7 +56,7 @@ The final cell defaults to `DOWNLOAD_RESULTS = True` and downloads one ZIP conta
 
 ## Input formats and saving
 
-Use a single-frame PNG, JPEG, BMP, TIFF or WebP image. The loader checks file contents with the supported decoders and converts to RGB. Animated, multipage and disguised unsupported images are rejected. The default requires 480 x 480 pixels. Explicit `resize` resizes the entire image with bilinear interpolation and may change the aspect ratio; it does not reproduce upstream ECG preparation. See the [README format table](../README.md#ecg-image-files-for-the-examples).
+Use a single-frame PNG, JPEG, BMP, TIFF or WebP image. The loader checks file contents with supported decoders and converts to RGB. Animated, multipage and disguised unsupported images are rejected. Dimensions are strict480 by default; the [input-policy options](../docs/image_preparation.md#select-the-geometry) must be selected explicitly. These options do not establish equivalence to the paper's upstream ECG preparation.
 
 Prediction outputs must be new by default. `--overwrite` can explicitly replace a prediction file, but cannot authorize writing over an input image, input CSV or model/configuration file, including a hardlink alias. CSV and metadata are separate filesystem updates: a partial save reports failure. Inspect partial files and choose a new filename before retrying. Use an output directory you control.
 
@@ -64,7 +66,7 @@ The v0.2.1 prediction baseline passed WSL/RTX 5090 float32/no-TTA comparison on 
 
 ## Optional Grad-CAM
 
-Add `--gradcam` to a ViT, ConvNeXtV2 or ensemble command. The notebook enables the same option with `ENABLE_GRADCAM = True`. Prediction settings and raw-logit averaging remain unchanged. Grad-CAM runs afterward, with one unaugmented float32 input per selected visualization model. Ensemble inference produces separate ViT and ConvNeXtV2 maps; it does not produce an averaged ensemble map. MLP-Mixer alone requires Grad-CAM to be disabled.
+Add `--gradcam` to a ViT, ConvNeXtV2 or ensemble command. In Colab, `ENABLE_GRADCAM = True` is the default; the prepared input, heatmaps and overlays appear in the notebook after successful inference. Grad-CAM runs afterward, with one unaugmented float32 input per selected visualization model, using the same selected input geometry as prediction. Ensemble inference produces separate ViT and ConvNeXtV2 maps; it does not produce an averaged ensemble map. MLP-Mixer alone requires Grad-CAM to be disabled.
 
 The defaults are `--cam-target model-predicted`, `--cam-normalization inference`, and `--cam-opacity 0.6`. Choose `--cam-target tako` or `--cam-target AMI` for a fixed class, or `--cam-target ensemble-predicted` with ensemble inference. The last option uses the final ensemble decision, including an explicit prediction threshold. Each panel and JSON entry records its actual target.
 

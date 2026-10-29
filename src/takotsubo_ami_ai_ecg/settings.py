@@ -6,6 +6,7 @@ import math
 LABELS = ("tako", "AMI")
 MODEL_NAMES = ("vit", "convnextv2", "mlpmixer")
 IMAGE_SIZE = 480
+INPUT_POLICIES = ("strict480", "resize", "square-resize", "center-crop", "pad")
 MEAN = (0.485, 0.456, 0.406)
 STD = (0.229, 0.224, 0.225)
 
@@ -48,8 +49,8 @@ class InferenceSettings:
             raise ValueError("Threshold must be between 0 and 1.")
         if type(self.seed) is not int or not 0 <= self.seed < 2**32 - 100000:
             raise ValueError("Seed must be a nonnegative 32-bit integer below 4294867296.")
-        if self.input_policy not in ("strict480", "resize"):
-            raise ValueError("Input policy must be strict480 or resize.")
+        if self.input_policy not in INPUT_POLICIES:
+            raise ValueError("Input policy must be one of: " + ", ".join(INPUT_POLICIES) + ".")
         if self.precision not in ("float32", "bfloat16"):
             raise ValueError("Precision must be float32 or bfloat16.")
         if self.device not in ("auto", "cpu", "cuda"):

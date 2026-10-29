@@ -7,7 +7,7 @@ import json
 from pathlib import Path
 import sys
 
-from .settings import MODEL_NAMES, InferenceSettings, ModelSettings
+from .settings import INPUT_POLICIES, MODEL_NAMES, InferenceSettings, ModelSettings
 from .progress import ProgressReporter
 from .safe_output import absolute_path, validate_outputs, write_files
 
@@ -38,7 +38,7 @@ def build_parser(fixed_model=None):
     parser.add_argument("--seed", type=int, default=1234, help="First augmented pass seed; increments each pass (default 1234).")
     parser.add_argument("--device", choices=["auto", "cpu", "cuda"], default="auto")
     parser.add_argument("--precision", choices=["float32", "bfloat16"], default="float32", help="ViT stays float32; bfloat16 applies to timm models and requires CUDA support.")
-    parser.add_argument("--input-policy", choices=["strict480", "resize"], default="strict480", help="strict480 preserves prepared 480x480 input; resize explicitly changes other images using bilinear resizing.")
+    parser.add_argument("--input-policy", choices=INPUT_POLICIES, default="strict480", help="strict480 requires 480x480; square-resize resizes squares; center-crop crops the centered short-side square; pad adds centered white padding to the long side. Each explicit preparation uses bilinear resize to 480x480. Legacy resize stretches the whole image.")
     parser.add_argument("--batch-size", type=int, default=1)
     parser.add_argument("--num-workers", type=int, default=4, help="DataLoader workers (default 4 as in archived evaluators; 0 is a portable override).")
     parser.add_argument("--output", required=True, help="New .json or .csv result file; CSV also gets a .metadata.json sidecar.")

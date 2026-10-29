@@ -1,6 +1,35 @@
 # Implementation and validation status
 
-Updated 2026-10-28 (JST); documentation revision 0.1.22. Inference package 0.3.1; weights 0.2.0.
+Updated 2026-10-29 (JST); documentation revision 0.1.24. Inference package 0.4.0; weights 0.2.0.
+
+## v0.4.0 image input and Colab controls
+
+Version 0.4.0 adds explicit image preparation policies and Colab input selection, CPU fallback and TTA controls. The default remains `strict480` with the paper TTA settings. Local validation completed on 2026-10-29 (JST; 2026-10-28 UTC) in the existing Windows CPU environment: Python 3.13.15, torch 2.13.0+cpu, torchvision 0.28.0+cpu, transformers 5.10.4, timm 1.0.22, numpy 2.2.6, Pillow 13.0.0 and safetensors 0.7.0, with an isolated filelock 4.2.1 overlay. This was not a fresh installation of the proposed Colab environment.
+
+| Check | Conditions | Verified result |
+|---|---|---|
+| Candidate test suite | Existing local Windows CPU environment | 172 tests: 169 passed, three hardlink cases skipped because hardlinks were unavailable, zero failures/errors. |
+| Default prediction and Grad-CAM preservation | One generated 480 x 480 image, selected v0.2.0 weights, CPU float32 and paper TTA; comparison with a frozen saved run in the same environment | All three models' and the ensemble's logits, probabilities and classifications matched exactly. Both ViT and ConvNeXtV2 numerical Grad-CAM maps and prepared input pixels matched exactly; artifact hashes were verified. |
+| New image preparation policies | One generated fixture per `square-resize`, `center-crop` and `pad`; selected-weight ViT, CPU float32, no TTA; each compared with an independently prepared Pillow image passed through `strict480` | Each pair had identical prepared pixels, logits, probabilities, classification and numerical Grad-CAM map; artifact hashes were verified. |
+
+All compared maps were finite float32 480 x 480 arrays. The original environment, saved baseline inputs/source and selected weights were preserved. The geometry comparisons check the specified operations on generated fixtures; they do not show clinical equivalence after changing an ECG image. These checks do not establish historical stochastic-TTA or reader-study heatmap equivalence.
+
+### Candidate Colab execution, 2026-10-29
+
+Eight runs of candidate package `0.4.0.dev0` completed with the reviewed source archive SHA-256 `a0810855641234c521ad44d8af94dd51620b6f023c551b030cbc07bb4b399de9`. Every run recorded the same 118 source-file hashes and the three official v0.2.0 checkpoint hashes plus the ViT configuration hash. Each downloaded ZIP contained two linked JSON records, five PNGs and two numerical map arrays; their hashes and sizes, prediction arithmetic, input/preparation correspondence and finite float32 480 x 480 maps were verified. The files and detailed records remain private.
+
+| Colab check | Conditions | Verified result |
+|---|---|---|
+| Generated-image GPU workflow | A100-SXM4-40GB, Python 3.13.16, CUDA float32, generated 480 x 480 RGB image, strict480, paper TTA, batch 1, four workers | Inference, ViT/ConvNeXtV2 Grad-CAM and nine-file ZIP completed; candidate/weight identities and saved outputs verified. |
+| Computer upload and image preparation | Same GPU runtime and paper TTA; 720 x 720 square with square-resize; 721 x 480 rectangle with center-crop and, in a separate run, pad | All three runs completed. Exported prepared pixels matched independent preparation of the corresponding known test fixture. |
+| Automatic CPU selection | Python 3.13.18, torch 2.13.0+cpu, torchvision 0.28.0+cpu, CUDA unavailable, requested device auto; generated 480 x 480 RGB image, strict480, float32, batch 1, zero workers | Two paper-TTA runs completed with identical prediction values and both numerical maps. A separate No TTA run recorded one view per model and completed inference, Grad-CAM and ZIP saving. |
+| Google Drive image | A100-SXM4-40GB, Python 3.13.16, CUDA float32, 480 x 480 RGB PNG, strict480 and paper TTA, batch 1, four workers | Run record identified google_drive_file. The exported input matched the recorded original byte and RGB hashes; prediction/run records and all seven artifacts passed integrity checks. |
+
+All eight runs used transformers 5.10.4, timm 1.0.22, numpy 2.2.6, Pillow 13.0.0, safetensors 0.7.0 and filelock 4.2.1. GPU runs used torch 2.13.0+cu130 / torchvision 0.28.0+cu130. Paper TTA retains ViT 24/magnitude 1, ConvNeXtV2 1 unchanged view and MLP-Mixer 32/magnitude 3. The CPU No TTA run used 1/1/1. Grad-CAM remained enabled and used independent unaugmented passes. These runs did not include a paired Grad-CAM-off comparison.
+
+The Drive input differed from the generated CPU input; the recorded CPU/GPU runtimes and worker counts also differed. The runs do not constitute a controlled timing benchmark. The saved-file checks do not establish clinical accuracy, historical stochastic-TTA reproduction, exhaustive input/format/custom-setting coverage or reader-study visualization equivalence.
+
+Release finalization changes documentation and package/citation version metadata; computation and dependency pins remain those of the tested candidate. The private candidate notebook replaced the public Git checkout cell with verified archive loading; its remaining code cells matched the public notebook. The final live run starting from the public `v0.4.0` tag remains pending. Existing release tags and Zenodo archives are preserved; CITATION.cff identifies v0.4.0 by its release URL, while the software DOI continues to identify v0.3.0 and the weight DOI v0.2.0.
 
 ## v0.3.1 maintenance release and validation
 

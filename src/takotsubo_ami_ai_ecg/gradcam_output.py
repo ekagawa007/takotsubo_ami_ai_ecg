@@ -87,8 +87,7 @@ def serialize_gradcam(images, result, cam_result, output, opacity=0.6):
     unchanged. Per-image manifests also live in metadata for CSV sidecars.
     """
     import numpy as np
-    from PIL import Image
-    from .image_input import open_supported_image
+    from .image_input import open_supported_image, prepare_image_geometry
     from .inference import sha256_file
     from .security import require_patched_pillow
 
@@ -117,11 +116,7 @@ def serialize_gradcam(images, result, cam_result, output, opacity=0.6):
         if sha256_file(path) != row["input_sha256"]:
             raise ValueError("An input image changed before Grad-CAM rendering.")
         with open_supported_image(path, index) as source:
-            image = source.convert("RGB")
-            if image.size != (IMAGE_SIZE, IMAGE_SIZE):
-                if result["metadata"]["settings"]["input_policy"] != "resize":
-                    raise ValueError("Grad-CAM display requires prepared 480x480 input.")
-                image = image.resize((IMAGE_SIZE, IMAGE_SIZE), resample=Image.Resampling.BILINEAR)
+            image = prepare_image_geometry(source.convert("RGB"), result["metadata"]["settings"]["input_policy"])
             rgb = np.array(image, dtype=np.uint8, copy=True)
         if sha256_file(path) != row["input_sha256"]:
             raise ValueError("An input image changed during Grad-CAM rendering.")

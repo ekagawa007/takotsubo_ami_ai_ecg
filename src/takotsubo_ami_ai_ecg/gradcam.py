@@ -18,9 +18,9 @@ import math
 from pathlib import Path
 import re
 
-from .image_input import open_supported_image
+from .image_input import ImageGeometry, open_supported_image
 from .inference import _load_model, _validate_images, _weight_paths, build_transform, sha256_file
-from .settings import IMAGE_SIZE, LABELS, MEAN, STD
+from .settings import IMAGE_SIZE, INPUT_POLICIES, LABELS, MEAN, STD
 
 CAM_MODELS = ("vit", "convnextv2")
 CAM_TARGETS = ("model-predicted", "ensemble-predicted", "tako", "AMI")
@@ -54,14 +54,16 @@ def build_cam_transform(name, normalization="inference", input_policy="strict480
         raise ValueError("Grad-CAM is available only for ViT and ConvNeXtV2.")
     if normalization not in CAM_NORMALIZATIONS:
         raise ValueError("Grad-CAM normalization must be inference or legacy-vit.")
-    if input_policy not in ("strict480", "resize"):
-        raise ValueError("Grad-CAM input policy must be strict480 or resize.")
+    if input_policy not in INPUT_POLICIES:
+        raise ValueError("Unknown Grad-CAM input policy.")
     if name != "vit" or normalization == "inference":
         return build_transform(name, False, 0, input_policy)
     from torchvision import transforms
     from torchvision.transforms import InterpolationMode
 
     operations = []
+    if input_policy not in ("strict480", "resize"):
+        operations.append(ImageGeometry(input_policy))
     if input_policy == "resize":
         operations.append(transforms.Resize((IMAGE_SIZE, IMAGE_SIZE), interpolation=InterpolationMode.BILINEAR))
     operations.extend([transforms.ToTensor(), transforms.Normalize(mean=(0.5,) * 3, std=(0.5,) * 3)])
@@ -234,7 +236,7 @@ def _prediction_contract(result, count, target, normalization):
             or meta.get("number_of_images") != count or meta.get("class_order") != list(LABELS)):
         raise ValueError("Grad-CAM prediction image count or class order does not match.")
     settings = meta.get("settings")
-    if not isinstance(settings, dict) or settings.get("input_policy") not in ("strict480", "resize"):
+    if not isinstance(settings, dict) or settings.get("input_policy") not in INPUT_POLICIES:
         raise ValueError("Grad-CAM requires the prediction input policy.")
     if meta.get("actual_device") not in ("cpu", "cuda"):
         raise ValueError("Grad-CAM requires a recorded CPU or CUDA prediction device.")

@@ -17,9 +17,9 @@ import platform
 import random
 
 from . import __version__
-from .image_input import ImageInputError, open_supported_image
+from .image_input import ImageGeometry, ImageInputError, describe_image_geometry, open_supported_image
 from .security import require_patched_pillow, validate_vit_config
-from .settings import IMAGE_SIZE, LABELS, MEAN, MODEL_NAMES, STD, InferenceSettings
+from .settings import IMAGE_SIZE, INPUT_POLICIES, LABELS, MEAN, MODEL_NAMES, STD, InferenceSettings
 
 
 def sha256_file(path):
@@ -85,7 +85,11 @@ def build_transform(model_name, augmented, magnitude, input_policy="strict480"):
         raise ValueError("Unknown model name.")
     if not 0 <= magnitude <= 9:
         raise ValueError("Magnitude must be 0..9 for the original ten-bin transform.")
+    if input_policy not in INPUT_POLICIES:
+        raise ValueError("Unknown input policy.")
     operations = []
+    if input_policy not in ("strict480", "resize"):
+        operations.append(ImageGeometry(input_policy))
     if model_name == "mlpmixer" or input_policy == "resize":
         operations.append(transforms.Resize((IMAGE_SIZE, IMAGE_SIZE), interpolation=InterpolationMode.BILINEAR))
     if augmented:
@@ -183,7 +187,7 @@ def _load_model(name, path, device):
     return model.to(device).eval(), metadata
 
 
-def _validate_images(paths, input_policy):
+def _validate_images(paths, input_policy, geometry_records=None):
     require_patched_pillow()
 
     if not paths:
@@ -194,13 +198,10 @@ def _validate_images(paths, input_policy):
             raise ValueError(f"Input image {index} does not exist.")
         try:
             with open_supported_image(path, index) as source:
-                if input_policy == "strict480" and source.size != (IMAGE_SIZE, IMAGE_SIZE):
-                    raise ValueError(
-                        f"Input image {index} is {source.width}x{source.height}; the default requires "
-                        "prepared 480x480 images. Use --input-policy resize only for an explicit "
-                        "resize experiment; this can differ from the paper's image preparation."
-                    )
+                geometry = describe_image_geometry(source.size, input_policy)
                 source.verify()
+                if geometry_records is not None:
+                    geometry_records.append({"sample_id": f"sample_{index:06d}", **geometry})
         except (OSError, SyntaxError):
             raise ValueError(f"Input image {index} is not a readable image.") from None
         hashes.append(sha256_file(path))
@@ -292,7 +293,8 @@ def predict(images, weights_dir="weights", model="ensemble", settings=None, chec
         progress_callback({"event": "stage", "message": "Checking inputs and checkpoints.",
                            "completed": 0, "total": total, "model": None,
                            "model_count": len(selected)})
-    input_hashes = _validate_images(paths, settings.input_policy)
+    input_geometry = []
+    input_hashes = _validate_images(paths, settings.input_policy, input_geometry)
     weight_paths = _weight_paths(weights_dir, checkpoint_overrides)
     # Validate the presence/format of every requested model before allocating.
     for name in selected:
@@ -376,7 +378,7 @@ def predict(images, weights_dir="weights", model="ensemble", settings=None, chec
                     "interpolation": "bilinear", "fill": 0, "seed_scope": "dataset_pass"},
             "preprocessing": {"rgb": True, "mean": list(MEAN), "std": list(STD),
                               "image_size": IMAGE_SIZE, "input_policy": settings.input_policy,
-                              "mixer_resize": "bilinear_480x480"},
+                              "mixer_resize": "bilinear_480x480", "images": input_geometry},
             "validation_status": "historical_prediction_parity_not_yet_verified",
             "reproducibility_note": "TTA realizations depend on input order, dataset size, worker count and library versions; paired comparison with the historical run is required.",
         },

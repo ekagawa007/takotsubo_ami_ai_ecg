@@ -1,10 +1,10 @@
 # takotsubo_ami_ai_ecg
 
-**Documentation version:** `0.1.22`
+**Documentation version:** `0.1.24`
 
-**Inference package version:** `0.3.1`
+**Inference package version:** `0.4.0`
 
-**Last updated:** 2026-10-28 (JST)
+**Last updated:** 2026-10-29 (JST)
 
 Research code for ECG-image models distinguishing takotsubo syndrome from acute anterior STEMI, including model development, ensemble evaluation, and a human diagnostic study.
 
@@ -18,6 +18,8 @@ The warranty exclusions and liability limitations in the [code license](LICENSE)
 
 ## Current status
 
+Version **0.4.0** adds explicit square-image resizing, center cropping and white padding in both CLI and Colab, plus Colab input selection, CPU fallback and TTA controls. The default still requires prepared 480 x 480 images and retains the paper prediction settings. On 2026-10-29 (JST), the candidate completed local CPU checks and eight Colab runs covering generated images, computer uploads, Google Drive, A100 inference and CPU inference with paper TTA or no TTA. Saved source/weight identities, predictions and Grad-CAM artifacts were verified. The separate final run starting from the public `v0.4.0` tag remains pending. See [image preparation and Colab options](docs/image_preparation.md), [validation scope](docs/implementation_status.md#v040-image-input-and-colab-controls) and [release notes](docs/releases/v0.4.0.md).
+
 [Version **v0.3.1**](https://github.com/ekagawa007/takotsubo_ami_ai_ecg/releases/tag/v0.3.1) explicitly pins `filelock==4.2.1` in inference requirements and records its version in CLI/Colab output. Model computation, selected weights, paper TTA and Grad-CAM calculations are unchanged. On 2026-10-28, WSL/RTX 5090 checks passed 117 of 119 tests (two Windows-only cases skipped) and preserved all prediction values and both Grad-CAM maps exactly across the filelock substitution. Both the candidate archive and the published `v0.3.1` tag completed Colab/A100 paper-TTA inference and Grad-CAM on one generated 480 x 480 image. The public-tag run recorded commit `aa1c8f4596b63bed39c53e390e67318d1836b7f7`; all 20 recorded inference-source hashes, selected-weight/configuration hashes and nine saved files were verified. Predictions matched the candidate exactly; the small ViT map difference is quantified in the validation record. See [implementation status](docs/implementation_status.md) and [release notes](docs/releases/v0.3.1.md). The Zenodo software archive remains **v0.3.0**; weights remain **v0.2.0**.
 
 [Version `0.3.0`](https://github.com/ekagawa007/takotsubo_ami_ai_ecg/releases/tag/v0.3.0) is published at commit `341ac955353f535fb74a4b6d8005a8b3b1290ad4` and adds optional Grad-CAM output for ViT and ConvNeXtV2. The prediction engine, selected weights, class order, paper TTA settings and raw-logit ensemble are unchanged from `v0.2.1`. The downloader continues to use the **v0.2.0 weight Release**. Anonymous source-download verification matched all 111 reviewed public files.
@@ -28,7 +30,7 @@ The archived ViT visualizer used mean/std 0.5 rather than current inference norm
 
 On 2026-10-24, the published `v0.3.0` Colab workflow completed paper-TTA inference and Grad-CAM on one generated 480 x 480 image using A100, Python 3.13.16 and CUDA float32. The recorded source/weight identities, prediction calculation, both numerical maps and all nine downloaded files were verified. This run did not include a paired Grad-CAM-off comparison. Earlier paired CPU and WSL checks on the `0.3.0.dev0` candidate confirmed exactly unchanged predictions when Grad-CAM was enabled; the `v0.2.1` baseline passed the ten-image float32/no-TTA comparison. See [implementation status](docs/implementation_status.md) for the full dated evidence and remaining scope.
 
-The [English Colab example](https://colab.research.google.com/github/ekagawa007/takotsubo_ami_ai_ecg/blob/main/examples/colab_inference.ipynb) uses a separate inference environment, defaults to a generated image, displays per-model Grad-CAM overlays and downloads matching predictions, the run record and visualization files together. Its source-loading cell selects `GIT_REF = "v0.3.1"`. On 2026-10-28, the published `v0.3.1` workflow completed source acquisition, paper-TTA prediction, Grad-CAM and the linked result ZIP on Colab/A100. The earlier candidate and v0.3.0 public-tag checks remain separate dated records.
+The [English v0.4.0 Colab notebook](https://colab.research.google.com/github/ekagawa007/takotsubo_ami_ai_ecg/blob/v0.4.0/examples/colab_inference.ipynb) offers **Synthetic example**, **Upload from computer**, and **Google Drive** inputs, shows the prepared image, and enables ViT/ConvNeXtV2 Grad-CAM display by default. Automatic device selection uses a GPU when available and warns before using CPU otherwise; CPU fallback retains the selected TTA settings. The final download contains matching prediction/run records and optional visualization files. The source-loading cell selects `GIT_REF = "v0.4.0"`. The [v0.3.1 notebook](https://colab.research.google.com/github/ekagawa007/takotsubo_ami_ai_ecg/blob/v0.3.1/examples/colab_inference.ipynb) remains available with its separate completed public-tag validation.
 
 The original training, evaluation and human-study sources retain the supplied learning procedures, with personal paths and identifying-looking examples generalized. The [model card](MODEL_CARD.md) describes the task, selected checkpoints and limitations. See [weight terms](WEIGHTS_LICENSE.md) and [upstream notices](THIRD_PARTY_NOTICES.md); the ViT noncommercial condition applies to the complete weight bundle.
 
@@ -101,9 +103,9 @@ Provide one **single-frame image per ECG** in one of these formats:
 
 The file's contents must be a supported image; renaming an EPS, PDF, SVG, GIF, DICOM or other file to `.png` does not convert it and will not make it accepted. Animated PNG/WebP and multipage TIFF files are rejected. PNG is a suitable choice for saving prepared ECG images without adding lossy compression.
 
-The default input is a prepared **480 x 480 pixel** ECG image. The loader converts supported images to RGB. Other dimensions are rejected unless `--input-policy resize` is requested explicitly; that option resizes the full image without cropping or padding, and does not reproduce the study's upstream ECG preparation. Lead layout, cropping and other preparation must already match the intended model input.
+The default input is a prepared **480 x 480 pixel** ECG image. The loader converts supported images to RGB. Other dimensions stop inference unless an explicit input policy is selected: `square-resize` for square images, `center-crop` for a centered square based on the shorter edge, or `pad` for a white square based on the longer edge. Each explicit policy then resizes to 480 x 480 with bilinear interpolation. The older `resize` option remains available for full-image stretching. See [geometry, examples and limitations](docs/image_preparation.md); these convenience operations do not establish equivalence to the paper's upstream ECG preparation.
 
-`data/example_ecg.png` in the CLI command is a placeholder: supply your own authorized image and change the path. Colab generates a synthetic image by default; select `INPUT_SOURCE = "file"` and edit `USER_IMAGE_PATH` to use an existing image. Patient ECG images are not included in the repository or weight archive. Synthetic images used for software checks do not establish clinical performance.
+`data/example_ecg.png` in the CLI command is a placeholder: supply your own authorized image and change the path. Colab generates a synthetic image by default; the input selector also accepts one computer upload or an existing Google Drive image. Patient ECG images are not included in the repository or weight archive. Synthetic images used for software checks do not establish clinical performance.
 
 | Model | TTA views, including the unchanged view | RandAugment magnitude |
 |---|---:|---:|
@@ -156,9 +158,9 @@ The code is licensed under the [MIT License](LICENSE). Copyright (c) 2026 Eisuke
 
 If you use the software, please cite the software record below. If you also use the distributed trained model weights, please cite the weight record as well. [CITATION.cff](CITATION.cff) contains the current software citation and separate references to the archived v0.3.0 software and v0.2.0 weights. These citations identify the archived versions used; a later software or weight version should be cited using its own record.
 
-**Current software (v0.3.1; GitHub Release, no new DOI):**
+**Current software (v0.4.0; GitHub Release, no new DOI):**
 
-Kagawa, E. (2026). *takotsubo_ami_ai_ecg: research software for ECG-image classification and Grad-CAM* (Version 0.3.1) [Computer software]. https://github.com/ekagawa007/takotsubo_ami_ai_ecg/releases/tag/v0.3.1
+Kagawa, E. (2026). *takotsubo_ami_ai_ecg: research software for ECG-image classification and Grad-CAM* (Version 0.4.0) [Computer software]. https://github.com/ekagawa007/takotsubo_ami_ai_ecg/releases/tag/v0.4.0
 
 **Archived software (v0.3.0):**
 
@@ -195,7 +197,7 @@ Kagawa, E. (2026). *takotsubo_ami_ai_ecg: trained ViT, ConvNeXtV2 and MLP-Mixer 
 
 The software DOI identifies the source at the original v0.3.0 commit `341ac955353f535fb74a4b6d8005a8b3b1290ad4`. The citation file and subsequent documentation updates are maintained on the default branch; the archived source remains that release snapshot. The software's first release date is 2026-10-23, and the weights' first release date is 2026-10-22. Both Zenodo records were published on 2026-10-27. Weight use remains subject to the model-specific terms in [WEIGHTS_LICENSE.md](WEIGHTS_LICENSE.md).
 
-Documentation version `0.1.22` identifies this README revision; `0.3.1` identifies the current inference package, while `0.3.0` remains the Zenodo-archived software version. CITATION.cff identifies v0.3.1 by its release URL and separately references the archived software and weights. No Zenodo DOI is assigned to v0.3.1 here. The weights retain version `0.2.0`. Published release [v0.1.1](https://github.com/ekagawa007/takotsubo_ami_ai_ecg/releases/tag/v0.1.1), commit `70ae84ce96bf939ef117b6d2924318aef8716b81`, identifies the requirements-containing source release. It does not include this later inference revision. Existing release tags are retained.
+Documentation version `0.1.24` identifies this README revision; `0.4.0` identifies the current inference software, and `0.3.0` remains the Zenodo-archived software version. CITATION.cff identifies v0.4.0 by its release URL and separately references the archived software and weights. No new Zenodo DOI is assigned to v0.4.0 here. The weights retain version `0.2.0`. Published release [v0.1.1](https://github.com/ekagawa007/takotsubo_ami_ai_ecg/releases/tag/v0.1.1), commit `70ae84ce96bf939ef117b6d2924318aef8716b81`, identifies the requirements-containing source release. It does not include this later inference revision. Existing release tags are retained.
 
 ## Revision history
 
@@ -203,6 +205,8 @@ Documentation versions track README revisions. Update the version/date above and
 
 | Date (JST) | Documentation version | Changes |
 |---|---|---|
+| 2026-10-29 | 0.1.24 | Finalized v0.4.0 and its citation; recorded eight candidate Colab runs covering all three input sources, GPU paper-TTA execution, square resizing/cropping/padding and CPU paper/no-TTA execution. Clarified rerunning the settings cell after changing forms. Retained version-specific Zenodo records and separated the pending final public-tag check. |
+| 2026-10-29 | 0.1.23 | Documented the 0.4.0.dev0 input/usability candidate: square resizing, center cropping, white padding, Colab input selection and preview, CPU fallback, and selectable TTA. Preserved the strict480/paper defaults and historical records; recorded local CPU tests and exact prediction/Grad-CAM comparisons, with live Colab validation pending. |
 | 2026-10-28 | 0.1.22 | Recorded completed public-tag v0.3.1 Colab/A100 inference and Grad-CAM, source/weight/output checks and comparison with the candidate. Updated current validation explanations and notebook Markdown only; executable code, notebook code cells, dependencies, weights and release tags are unchanged. |
 | 2026-10-28 | 0.1.21 | Finalized v0.3.1 with completed WSL/RTX 5090 dependency-parity checks and Colab/A100 candidate inference/Grad-CAM verification. Updated public validation notes and the current-version citation while retaining the existing Zenodo version DOIs, licenses and weight assets. Final public-tag Colab acquisition remains a separate check. |
 | 2026-10-27 | 0.1.20 | Prepared v0.3.1 with an explicit filelock 4.2.1 inference pin and version recording. Refreshed remaining publication-status documents and Zenodo links, preserving dated validation evidence, historical training requirements, original weights and existing release/DOI identities. Candidate validation is reported separately. |
