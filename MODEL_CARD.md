@@ -1,6 +1,6 @@
 # Model card: takotsubo versus AMI ECG-image models
 
-Updated 2026-10-29 (JST); citation documentation revision 0.1.27. This card retains the `v0.3.1` baseline validation below for unchanged weight assets `v0.2.0`; the current software citation is `v0.4.0`. The filelock 4.2.1 maintenance update passed candidate WSL/CUDA and Colab checks on 2026-10-28. The public v0.3.1 tag subsequently completed the Colab workflow on the same date, with verified source, weight and output identities. See [implementation status](docs/implementation_status.md).
+Updated 2026-10-30 (JST); documentation revision 0.1.28. This card retains the `v0.3.1` baseline validation below for unchanged weight assets `v0.2.0`; the current software citation is `v0.4.0`. The filelock 4.2.1 maintenance update passed candidate WSL/CUDA and Colab checks on 2026-10-28. The public v0.3.1 tag subsequently completed the Colab workflow on the same date, with verified source, weight and output identities. See [implementation status](docs/implementation_status.md).
 
 ## Task and intended use
 
@@ -43,6 +43,8 @@ Check the [v0.2.0 release page](https://github.com/ekagawa007/takotsubo_ami_ai_e
 ```bash
 python tools/download_weights.py --output-dir weights
 ```
+
+The unchanged **v0.2.0** weight files are also distributed through [Hugging Face](https://huggingface.co/ekagawa/takotsubo-ami-ai-ecg). Its [fixed initial mirror revision](https://huggingface.co/ekagawa/takotsubo-ami-ai-ecg/tree/1be91bab9d86631a1016da4381825002c3d22405) provides an English Model Card and checksum-verifying download helper for use with companion software **v0.4.0**. The existing CLI/Colab download defaults use the GitHub Release bundle. The model-specific terms below and the version-specific Zenodo citations remain applicable.
 
 The code is MIT licensed. Confirmed model-weight terms are separate: the ViT assets carry CC BY-NC 4.0 noncommercial terms and retained upstream notices; author-owned ConvNeXtV2 and MLP-Mixer contributions use MIT terms subject to the documented upstream notices. The complete three-model bundle includes the ViT condition. Read [WEIGHTS_LICENSE.md](WEIGHTS_LICENSE.md) and [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md); do not infer unrestricted commercial rights from the code license.
 

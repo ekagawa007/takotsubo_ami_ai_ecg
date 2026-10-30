@@ -1,10 +1,10 @@
 # takotsubo_ami_ai_ecg
 
-**Documentation version:** `0.1.27`
+**Documentation version:** `0.1.28`
 
 **Inference package version:** `0.4.0`
 
-**Last updated:** 2026-10-29 (JST)
+**Last updated:** 2026-10-30 (JST)
 
 Research code for ECG-image models distinguishing takotsubo syndrome from acute anterior STEMI, including model development, ensemble evaluation, and a human diagnostic study.
 
@@ -150,6 +150,8 @@ Patient ECG data, participant records, credentials, private originals, and local
 
 Code and documentation are available in the [GitHub repository](https://github.com/ekagawa007/takotsubo_ami_ai_ecg). The `v0.2.0` assets are `takotsubo_ami_ai_ecg_weights_v0.2.0.zip` and `SHA256SUMS.txt`. The three selected safetensors files total 958,657,088 bytes; the ZIP is 958,701,120 bytes. Use the [release page](https://github.com/ekagawa007/takotsubo_ami_ai_ecg/releases/tag/v0.2.0) to check asset availability. The separate weight terms are confirmed: ViT uses CC BY-NC 4.0 with the documented upstream notices; author-owned ConvNeXtV2 and MLP-Mixer contributions use MIT terms. Live public-download verification is recorded separately. The current [v0.4.0 source archive](https://doi.org/10.5281/zenodo.23763944), earlier [v0.3.0 source archive](https://doi.org/10.5281/zenodo.23666137) and unchanged [v0.2.0 weight archive](https://doi.org/10.5281/zenodo.23666262) are published on Zenodo with separate version-specific DOIs.
 
+The unchanged **v0.2.0** weight files are also available on [Hugging Face](https://huggingface.co/ekagawa/takotsubo-ami-ai-ecg), with an English Model Card and a checksum-verifying download helper. The [fixed Hugging Face revision](https://huggingface.co/ekagawa/takotsubo-ami-ai-ecg/tree/1be91bab9d86631a1016da4381825002c3d22405) identifies the initial mirror contents, paired with companion software **v0.4.0**. Follow that revision's Model Card for Hugging Face downloads. The CLI and Colab defaults continue to download the GitHub Release bundle; the Zenodo DOIs above remain the software and weight citations.
+
 ## License and citation
 
 The code is licensed under the [MIT License](LICENSE). Copyright (c) 2026 Eisuke Kagawa. External libraries retain their respective licenses. Model binaries are supplied separately from the Git source tree. Weight terms are documented in [WEIGHTS_LICENSE.md](WEIGHTS_LICENSE.md): the complete bundle includes the ViT noncommercial condition. The code's MIT License does not remove those separate terms. The related [medRxiv preprint](https://doi.org/10.64898/2026.10.15.26365116) has its own author list and DOI; a final journal citation can be added when available. See [implementation and validation status](docs/implementation_status.md) and the [upstream notices](THIRD_PARTY_NOTICES.md).
@@ -209,7 +211,7 @@ Kagawa, E. (2026). *takotsubo_ami_ai_ecg: trained ViT, ConvNeXtV2 and MLP-Mixer 
 
 The v0.4.0 software DOI identifies the source at commit `6a16326b761c198c11776155102dc31d1308bfeb`, released on GitHub and archived on Zenodo on 2026-10-29. The anonymous Zenodo download matched the prepared source ZIP and all 119 tagged files. The older v0.3.0 DOI continues to identify commit `341ac955353f535fb74a4b6d8005a8b3b1290ad4` (GitHub release date 2026-10-23). The weights retain their original 2026-10-22 release date; the v0.3.0 code and v0.2.0 weight Zenodo records were published on 2026-10-27. Citation and subsequent documentation updates are maintained on the default branch without changing those archived snapshots. Cite the version-specific DOI for the software actually used. Weight use remains subject to the model-specific terms in [WEIGHTS_LICENSE.md](WEIGHTS_LICENSE.md).
 
-Documentation version `0.1.27` identifies this README revision; `0.4.0` identifies the current inference software and its Zenodo archive. CITATION.cff identifies v0.4.0 by its version-specific DOI and separately references the earlier v0.3.0 software and v0.2.0 weights. The weights retain version `0.2.0`. Published release [v0.1.1](https://github.com/ekagawa007/takotsubo_ami_ai_ecg/releases/tag/v0.1.1), commit `70ae84ce96bf939ef117b6d2924318aef8716b81`, identifies the requirements-containing source release. It does not include this later inference revision. Existing release tags are retained.
+Documentation version `0.1.28` identifies this README revision; `0.4.0` identifies the current inference software and its Zenodo archive. CITATION.cff identifies v0.4.0 by its version-specific DOI and separately references the earlier v0.3.0 software and v0.2.0 weights. The weights retain version `0.2.0`. Published release [v0.1.1](https://github.com/ekagawa007/takotsubo_ami_ai_ecg/releases/tag/v0.1.1), commit `70ae84ce96bf939ef117b6d2924318aef8716b81`, identifies the requirements-containing source release. It does not include this later inference revision. Existing release tags are retained.
 
 ## Revision history
 
@@ -217,6 +219,7 @@ Documentation versions track README revisions. Update the version/date above and
 
 | Date (JST) | Documentation version | Changes |
 |---|---|---|
+| 2026-10-30 | 0.1.28 | Added the Hugging Face mirror and fixed-revision links for unchanged v0.2.0 weights paired with v0.4.0 software. Documented the mirror download route while preserving the GitHub Release download defaults, licenses, Zenodo citations and existing release identities. |
 | 2026-10-29 | 0.1.27 | Added the published v0.4.0 Zenodo version DOI, source-commit identity and current citation examples; recorded anonymous archive verification and the related preprint. Retained earlier software/weight references, archived tags and all runtime code. |
 | 2026-10-29 | 0.1.26 | Recorded completion of the public v0.4.0 Colab/A100 synthetic-image workflow, verified source/weight identities and all nine saved files, exact candidate prediction agreement, and the small ViT map difference with identical rendered pixels. Updated current validation guidance and notebook Markdown; runtime code, weights and existing tags are unchanged. |
 | 2026-10-29 | 0.1.25 | Consolidated the Colab notebook under examples/, removed duplicate/internal preparation documents from the current source tree, and removed obsolete display metadata from historical notebooks without changing their cell sources. Updated notebook-test references, training provenance wording and published-weight guidance. Existing tags, software version, model weights and runtime code are unchanged. |
